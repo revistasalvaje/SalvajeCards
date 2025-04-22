@@ -14,7 +14,9 @@
   "license": "ISC",
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.4",
+    "@types/fabric": "^5.3.10",
     "@types/react": "^18.0.15",
+    "@types/react-color": "^3.0.13",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "3.1.0",
     "autoprefixer": "^10.4.21",
