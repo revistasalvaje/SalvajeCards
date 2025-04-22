@@ -3,7 +3,7 @@ import "./index.css";
 import "./styles.css";
 import "./styles-enhanced.css";
 import ColorThief from "colorthief";
-import { fabric } from "fabric";
+import { fabric } from 'fabric';
 import LeftSidebar from "./components/LeftSidebar";
 import CanvasEditor from "./components/CanvasEditor";
 import RightSidebar from "./components/RightSidebar";
