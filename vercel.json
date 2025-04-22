@@ -3,6 +3,8 @@
     { "src": "package.json", "use": "@vercel/static-build" }
   ],
   "routes": [
+    { "src": "/assets/.*\\.js", "headers": { "content-type": "application/javascript" } },
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
   "outputDirectory": "dist"
