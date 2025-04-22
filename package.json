@@ -30,7 +30,7 @@
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.7",
     "colorthief": "^2.6.0",
-    "fabric": "^5.5.2",
+    "fabric": "4.6.0",
     "lucide-react": "^0.501.0",
     "react-color": "^2.19.3"
   }
