@@ -48,23 +48,22 @@ const ColorPickers: React.FC<ColorPickersProps> = ({
   }, [showBgPicker, showTextPicker, toggleBgPicker, toggleTextPicker]);
 
   return (
-    <div className="color-picker-container">
-      <h3 className="text-sm font-semibold mb-3">Colores</h3>
-      <div className="flex items-start gap-6">
-        {/* Fondo */}
-        <div className="relative">
-          <label className="text-sm font-medium block mb-1">Fondo</label>
-          <div
-            onClick={toggleBgPicker}
-            className="color-swatch"
-            style={{
-              backgroundColor: bgColor,
-            }}
+    <div className="control-group">
+      <h3>Colores</h3>
+
+      <div className="controls-row items-center">
+        <div className="relative flex-1">
+          <label>Fondo</label>
+          <div 
+            onClick={toggleBgPicker} 
+            className="color-swatch mt-1" 
+            style={{ backgroundColor: bgColor }}
+            title="Color de fondo"
           />
           {showBgPicker && (
             <div 
               ref={bgPickerRef}
-              className="absolute z-50 mt-2"
+              className="absolute z-50 mt-1"
             >
               <div className="shadow-lg">
                 <ChromePicker
@@ -77,20 +76,18 @@ const ColorPickers: React.FC<ColorPickersProps> = ({
           )}
         </div>
 
-        {/* Texto */}
-        <div className="relative">
-          <label className="text-sm font-medium block mb-1">Texto</label>
+        <div className="relative flex-1">
+          <label>Texto</label>
           <div
             onClick={toggleTextPicker}
-            className="color-swatch"
-            style={{
-              backgroundColor: textColor,
-            }}
+            className="color-swatch mt-1"
+            style={{ backgroundColor: textColor }}
+            title="Color de texto"
           />
           {showTextPicker && (
             <div
               ref={textPickerRef}
-              className="absolute z-50 mt-2"
+              className="absolute z-50 mt-1"
             >
               <div className="shadow-lg">
                 <ChromePicker

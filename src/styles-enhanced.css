@@ -295,3 +295,312 @@ canvas {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* Añade estos estilos en src/styles.css o src/styles-enhanced.css para eliminar bordes en los acordeones */
+
+/* Remover bordes y fondos de los acordeones */
+.sidebar .accordion-header,
+.sidebar [data-radix-accordion-trigger] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Ajustar tamaño y estilo de los títulos de acordeones */
+.sidebar [data-radix-accordion-trigger] {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+/* Eliminar bordes de los items de acordeón */
+.sidebar [data-radix-accordion-item] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Agregar separación entre secciones */
+.sidebar [data-radix-accordion-content] {
+  padding-top: 8px;
+  padding-bottom: 16px;
+}
+
+/* Añade estos estilos a src/styles-enhanced.css o src/styles.css */
+
+/* Mejorar jerarquía visual */
+
+/* Títulos de acordeones (principales) */
+.sidebar [data-radix-accordion-trigger] {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #000000 !important;
+  padding: 8px 0 !important;
+}
+
+/* Subtítulos dentro de las secciones */
+.sidebar h3 {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #555555 !important;
+  margin-bottom: 8px !important;
+}
+
+/* Para los contenedores de subsecciones */
+.sidebar [data-radix-accordion-content] > div {
+  margin-bottom: 16px !important;
+  padding-left: 4px !important;
+}
+
+/* Separador visual entre secciones */
+.sidebar [data-radix-accordion-item] + [data-radix-accordion-item] {
+  margin-top: 12px !important;
+  border-top: 1px solid #f0f0f0 !important;
+  padding-top: 4px !important;
+}
+
+/* Estilos minimalistas para la barra derecha - añadir a styles-enhanced.css */
+
+/* Variables */
+:root {
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #333333;
+  --accent-color: #4361ee;
+  --border-color: #f0f0f0;
+  --input-bg: #f9f9f9;
+  --muted-text: #666666;
+  --subtle-hover: #f5f5f5;
+}
+
+/* Contenedor principal */
+.sidebar {
+  background-color: var(--sidebar-bg);
+  padding: 16px;
+  overflow-y: auto;
+  border-left: 1px solid var(--border-color);
+  height: 100%;
+}
+
+/* Título principal */
+.sidebar > h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Acordeones */
+.sidebar [data-radix-accordion-trigger] {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--sidebar-text) !important;
+  padding: 10px 0 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.sidebar [data-radix-accordion-trigger]:hover {
+  color: var(--accent-color) !important;
+}
+
+.sidebar [data-radix-accordion-trigger] svg {
+  color: var(--muted-text);
+  width: 16px;
+  height: 16px;
+}
+
+/* Separación entre secciones */
+.sidebar [data-radix-accordion-item] {
+  margin-bottom: 4px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Contenido de acordeón */
+.sidebar [data-radix-accordion-content] {
+  padding: 8px 4px 16px 4px !important;
+}
+
+/* Subtítulos */
+.sidebar h3 {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--muted-text) !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Inputs de texto */
+.sidebar textarea,
+.sidebar input[type="text"],
+.sidebar input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+  transition: border-color 0.2s ease;
+}
+
+.sidebar textarea:focus,
+.sidebar input[type="text"]:focus,
+.sidebar input[type="number"]:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+/* Botones de estilo */
+.sidebar .style-button {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--sidebar-bg);
+  color: var(--muted-text);
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.sidebar .style-button:hover {
+  background-color: var(--subtle-hover);
+}
+
+.sidebar .style-button.active {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+/* Selects */
+.sidebar select {
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--sidebar-text);
+  transition: border-color 0.2s ease;
+}
+
+.sidebar select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+/* Selector de color */
+.sidebar .color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.sidebar .color-swatch:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Paleta de colores */
+.sidebar .palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.sidebar .palette-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.sidebar .palette-color:hover {
+  transform: scale(1.1);
+}
+
+/* Botones de acción */
+.sidebar .action-button {
+  padding: 6px 12px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--sidebar-text);
+  transition: all 0.2s ease;
+}
+
+.sidebar .action-button:hover {
+  background-color: var(--subtle-hover);
+}
+
+.sidebar .action-button.primary {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.sidebar .action-button.primary:hover {
+  background-color: darken(var(--accent-color), 10%);
+}
+
+/* Etiquetas */
+.sidebar label {
+  font-size: 12px;
+  color: var(--muted-text);
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Contenedor de control */
+.sidebar .control-group {
+  margin-bottom: 12px;
+}
+
+/* Flex containers */
+.sidebar .controls-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+/* Input de archivo personalizado */
+.sidebar .file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.sidebar .file-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.sidebar .file-input-label {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--sidebar-text);
+  cursor: pointer;
+}
+
+.sidebar .file-name {
+  font-size: 11px;
+  color: var(--muted-text);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

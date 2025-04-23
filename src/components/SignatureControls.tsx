@@ -18,75 +18,78 @@ const SignatureControls: React.FC<SignatureControlsProps> = ({
   onAlignChange,
 }) => {
   return (
-    <div className="mb-4 w-full max-w-full">
-      <h3 className="text-sm font-semibold mb-2">Firma</h3>
-      <div className="mb-2">
-        <div className="mb-2">
-          <div className="w-full overflow-hidden">
-            <div className="max-w-full">
-              <textarea
-                value={signature}
-                onChange={(e) => onChange(e.target.value)}
-                className="block w-full max-w-full p-2 border rounded text-sm mb-2 resize-none"
-                rows={2}
-                placeholder="Autor de la cita..."
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="control-group">
+      <h3>Firma</h3>
 
-      {/* Controles rediseñados para ocupar menos espacio */}
-      <div className="flex flex-wrap items-center gap-1 text-xs w-full">
-        {["bold", "italic", "underline", "linethrough"].map((style) => (
-          <button
-            key={style}
-            className="w-6 h-6 border rounded shrink-0 text-xs"
-            onClick={() =>
-              onToggleStyle(
-                style === "bold"
-                  ? "fontWeight"
-                  : style === "italic"
-                  ? "fontStyle"
-                  : style,
-                style === "bold"
-                  ? "bold"
-                  : style === "italic"
-                  ? "italic"
-                  : true
-              )
-            }
-          >
-            {style[0].toUpperCase()}
-          </button>
-        ))}
+      <textarea
+        value={signature}
+        onChange={(e) => onChange(e.target.value)}
+        className="mb-3"
+        rows={2}
+        placeholder="Autor de la cita..."
+      />
+
+      <div className="controls-row">
+        <button
+          className="style-button"
+          onClick={() => onToggleStyle("fontWeight", "bold")}
+          title="Negrita"
+        >
+          B
+        </button>
+        <button
+          className="style-button"
+          onClick={() => onToggleStyle("fontStyle", "italic")}
+          title="Cursiva"
+        >
+          I
+        </button>
+        <button
+          className="style-button"
+          onClick={() => onToggleStyle("underline", true)}
+          title="Subrayado"
+        >
+          U
+        </button>
+        <button
+          className="style-button"
+          onClick={() => onToggleStyle("linethrough", true)}
+          title="Tachado"
+        >
+          S
+        </button>
 
         <input
           type="number"
           min={8}
           max={100}
-          defaultValue={32} // Valor predeterminado para el tamaño del texto de firma
-          className="w-9 px-1 py-0.5 border rounded text-center shrink-0 text-xs"
+          defaultValue={32}
+          className="w-12 text-center"
           onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
+          title="Tamaño de fuente"
         />
+      </div>
 
+      <div className="controls-row">
         <select
-          className="w-14 px-1 py-0.5 border rounded shrink-0 text-xs"
+          className="flex-1"
           onChange={(e) => onFontChange(e.target.value)}
+          title="Tipo de fuente"
         >
           <option value="serif">Serif</option>
-          <option value="sans-serif">Sans</option>
-          <option value="monospace">Mono</option>
+          <option value="sans-serif">Sans Serif</option>
+          <option value="monospace">Monospace</option>
         </select>
 
         <select
-          className="w-16 px-1 py-0.5 border rounded shrink-0 text-xs"
+          className="flex-1"
           onChange={(e) => onAlignChange(e.target.value)}
           defaultValue="right"
+          title="Alineación"
         >
-          <option value="left">Izq</option>
+          <option value="left">Izquierda</option>
           <option value="center">Centro</option>
-          <option value="right">Der</option>
+          <option value="right">Derecha</option>
         </select>
       </div>
     </div>

@@ -74,9 +74,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       <h2 className="text-lg font-semibold mb-4">Controles</h2>
 
       <Accordion type="multiple" className="w-full" defaultValue={["paleta", "texto", "formas"]}>
-        <AccordionItem value="paleta" className="border-none mb-2">
-          <AccordionTrigger className="text-sm py-2 font-semibold">Paleta</AccordionTrigger>
-          <AccordionContent className="pt-2 pb-4">
+        {/* Sin clases adicionales que añadan bordes o fondos a los acordeones */}
+        <AccordionItem value="paleta">
+          <AccordionTrigger>Paleta</AccordionTrigger>
+          <AccordionContent>
             <ImagePaletteUploader
               uploadedBgImage={uploadedBgImage}
               palette={palette}
@@ -99,9 +100,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="texto" className="border-none mb-2">
-          <AccordionTrigger className="text-sm py-2 font-semibold">Texto</AccordionTrigger>
-          <AccordionContent className="pt-2 pb-4">
+        <AccordionItem value="texto">
+          <AccordionTrigger>Texto</AccordionTrigger>
+          <AccordionContent>
             <QuoteControls
               quote={quote}
               onQuoteChange={onQuoteChange}
@@ -121,9 +122,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="formas" className="border-none mb-2">
-          <AccordionTrigger className="text-sm py-2 font-semibold">Formas</AccordionTrigger>
-          <AccordionContent className="pt-2 pb-4">
+        <AccordionItem value="formas">
+          <AccordionTrigger>Formas</AccordionTrigger>
+          <AccordionContent>
             <ShapeControls
               strokeColor={strokeColor}
               strokeWidth={strokeWidth}

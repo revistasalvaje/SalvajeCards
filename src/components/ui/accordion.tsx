@@ -11,7 +11,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("", className)} // Eliminamos el borde por defecto
+    className={cn("mb-3", className)} // Más espacio entre acordeones
     {...props}
   />
 ));
@@ -25,13 +25,13 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-center justify-between py-2 text-sm font-semibold transition-transform [&[data-state=open]>svg]:rotate-180",
+        "flex flex-1 items-center justify-between py-2 text-base text-gray-900 font-bold transition-all border-0 outline-none bg-transparent [&[data-state=open]>svg]:rotate-180",
         className
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+      <ChevronDown className="h-5 w-5 transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -44,7 +44,7 @@ const AccordionContent = React.forwardRef<
   <AccordionPrimitive.Content
     ref={ref}
     className={cn(
-      "text-sm overflow-hidden transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+      "text-sm overflow-hidden pt-2 pb-4 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
       className
     )}
     {...props}

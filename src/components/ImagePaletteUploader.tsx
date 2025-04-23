@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface ImagePaletteUploaderProps {
   uploadedBgImage: string | null;
@@ -15,44 +15,74 @@ const ImagePaletteUploader: React.FC<ImagePaletteUploaderProps> = ({
   onApplyImageBg,
   onPaletteClick,
 }) => {
-  return (
-    <div className="mb-6">
-      <h3 className="text-sm font-semibold mb-2">Paleta</h3>
+  const [fileName, setFileName] = useState<string>("");
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={onImageUpload}
-        className="block w-full text-sm mb-2"
-      />
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFileName(e.target.files[0].name);
+    }
+    onImageUpload(e);
+  };
+
+  return (
+    <div className="control-group">
+      <h3>Imagen</h3>
+
+      <div className="file-input-wrapper w-full mb-2">
+        <label className="file-input-label w-full">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Subir imagen
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="file-input"
+          />
+        </label>
+        {fileName && <div className="file-name">{fileName}</div>}
+      </div>
 
       {uploadedBgImage && (
         <div className="mb-3">
-          <img
-            src={uploadedBgImage}
-            alt="miniatura"
-            className="w-full h-auto max-h-32 object-cover rounded mb-2 border"
-          />
+          <div className="relative w-full h-32 bg-gray-100 rounded overflow-hidden mb-2">
+            <img
+              src={uploadedBgImage}
+              alt="Imagen cargada"
+              className="w-full h-full object-contain"
+            />
+          </div>
 
           <button
             onClick={onApplyImageBg}
-            className="w-full bg-gray-800 text-white text-sm px-2 py-1 rounded hover:bg-gray-700"
+            className="action-button primary w-full"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
             Usar como fondo
           </button>
         </div>
       )}
 
       {palette.length > 0 && (
-        <div className="flex flex-wrap gap-1 min-h-[36px]">
-          {palette.map((color, idx) => (
-            <button
-              key={idx}
-              onClick={() => onPaletteClick(color)}
-              className="w-6 h-9 border"
-              style={{ backgroundColor: color }}
-            />
-          ))}
+        <div className="control-group">
+          <h3>Paleta de colores</h3>
+          <div className="palette">
+            {palette.map((color, idx) => (
+              <button
+                key={idx}
+                onClick={() => onPaletteClick(color)}
+                className="palette-color"
+                style={{ backgroundColor: color }}
+                title={`Color de paleta ${idx + 1}`}
+              />
+            ))}
+          </div>
+          <div className="text-xs text-gray-500">
+            Click: color de fondo | Doble click: color de texto
+          </div>
         </div>
       )}
     </div>
