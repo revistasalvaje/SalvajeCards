@@ -1,7 +1,11 @@
 import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
-import { cn } from "../../lib/utils";
+
+// Utilidad para combinar nombres de clases
+const cn = (...classes: (string | undefined | null | false)[]) => {
+  return classes.filter(Boolean).join(" ");
+};
 
 const Accordion = AccordionPrimitive.Root;
 
@@ -11,7 +15,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("mb-3", className)} // Más espacio entre acordeones
+    className={cn("border-b border-slate-200 last:border-0", className)}
     {...props}
   />
 ));
@@ -25,13 +29,13 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-center justify-between py-2 text-base text-gray-900 font-bold transition-all border-0 outline-none bg-transparent [&[data-state=open]>svg]:rotate-180",
+        "flex flex-1 items-center justify-between py-3 font-medium text-slate-900 transition-all hover:text-blue-500 [&[data-state=open]>svg]:rotate-180",
         className
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-5 w-5 transition-transform duration-200" />
+      <ChevronDown className="h-4 w-4 text-slate-500 transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -40,21 +44,18 @@ AccordionTrigger.displayName = "AccordionTrigger";
 const AccordionContent = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
     className={cn(
-      "text-sm overflow-hidden pt-2 pb-4 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+      "overflow-hidden pb-4 pt-1 text-slate-700 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
       className
     )}
     {...props}
-  />
+  >
+    <div className="pb-1">{children}</div>
+  </AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = "AccordionContent";
 
-export {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-};
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };

@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import "./index.css";
 import "./styles.css";
 import "./styles-enhanced.css";
+import "./sidebar-styles.css"; // Añade esta línea después de las importaciones CSS existentes
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
 import LeftSidebar from "./components/LeftSidebar";

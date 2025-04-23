@@ -1,44 +1,45 @@
-import React from "react";
-import ImagePaletteUploader from "./ImagePaletteUploader";
-import QuoteControls from "./QuoteControls";
-import SignatureControls from "./SignatureControls";
-import ShapeControls from "./ShapeControls";
-import ColorPickers from "./ColorPickers";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
+import React, { useState, useRef, useEffect } from "react";
+import { ChromePicker } from "react-color";
 
-interface RightSidebarProps {
-  uploadedBgImage: string | null;
-  palette: string[];
-  bgColor: string;
-  textColor: string;
-  showBgPicker: boolean;
-  showTextPicker: boolean;
-  quote: string;
-  signature: string;
-  strokeColor: string;
-  strokeWidth: number;
-  onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onApplyImageBg: () => void;
-  onPaletteClick: (color: string) => void;
-  onBgColorChange: (hex: string) => void;
-  onTextColorChange: (hex: string) => void;
-  toggleBgPicker: () => void;
-  toggleTextPicker: () => void;
-  onQuoteChange: (text: string) => void;
-  onSignatureChange: (text: string) => void;
-  onToggleStyle: (style: string, value: any) => void;
-  onFontSizeChange: (size: number) => void;
-  onFontSizeSignatureChange: (size: number) => void;
-  onFontChange: (font: string) => void;
-  onFontSignatureChange: (font: string) => void;
-  onAlignChange: (align: string) => void;
-  onAlignSignatureChange: (align: string) => void;
-  addShape: (type: "line" | "arrow" | "rect" | "circle") => void;
-  handleStrokeColorChange: (color: string) => void;
-  handleStrokeWidthChange: (width: number) => void;
-}
+// Componente de Accordion simplificado
+const AccordionSection = ({ title, defaultOpen = false, children }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
-const RightSidebar: React.FC<RightSidebarProps> = ({
+  return (
+    <div className="control-group">
+      <button 
+        className="accordion-button" 
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        {title}
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+          className="accordion-icon"
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="accordion-content">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente principal de la barra lateral derecha
+const RightSidebar = ({
   uploadedBgImage,
   palette,
   bgColor,
@@ -69,72 +70,349 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   handleStrokeColorChange,
   handleStrokeWidthChange,
 }) => {
+  const [fileName, setFileName] = useState("");
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFileName(e.target.files[0].name);
+    }
+    onImageUpload(e);
+  };
+
+  const bgPickerRef = useRef(null);
+  const textPickerRef = useRef(null);
+
+  // Cerrar pickers al hacer click fuera
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (showBgPicker && 
+          bgPickerRef.current && 
+          !bgPickerRef.current.contains(event.target)) {
+        toggleBgPicker();
+      }
+
+      if (showTextPicker && 
+          textPickerRef.current && 
+          !textPickerRef.current.contains(event.target)) {
+        toggleTextPicker();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showBgPicker, showTextPicker, toggleBgPicker, toggleTextPicker]);
+
   return (
-    <div className="sidebar p-4 overflow-y-auto h-full">
-      <h2 className="text-lg font-semibold mb-4">Controles</h2>
+    <div className="sidebar">
+      <div className="sidebar-content">
+        <AccordionSection title="Fondo" defaultOpen={true}>
+          {/* Color de fondo */}
+          <div className="control-group">
+            <h3 className="section-title">Color de fondo</h3>
+            <div className="control-row">
+              <div className="color-picker-container">
+                <div 
+                  className="color-swatch" 
+                  style={{ backgroundColor: bgColor }}
+                  onClick={toggleBgPicker}
+                />
+                {showBgPicker && (
+                  <div className="color-picker-popover" ref={bgPickerRef}>
+                    <ChromePicker
+                      color={bgColor}
+                      onChange={(c) => onBgColorChange(c.hex)}
+                      disableAlpha
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-      <Accordion type="multiple" className="w-full" defaultValue={["paleta", "texto", "formas"]}>
-        {/* Sin clases adicionales que añadan bordes o fondos a los acordeones */}
-        <AccordionItem value="paleta">
-          <AccordionTrigger>Paleta</AccordionTrigger>
-          <AccordionContent>
-            <ImagePaletteUploader
-              uploadedBgImage={uploadedBgImage}
-              palette={palette}
-              onImageUpload={onImageUpload}
-              onApplyImageBg={onApplyImageBg}
-              onPaletteClick={onPaletteClick}
+          {/* Imagen de fondo */}
+          <div className="control-group">
+            <h3 className="section-title">Imagen de fondo</h3>
+            <div className="file-input-wrapper">
+              <label className="file-input-label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Seleccionar imagen
+                <input
+                  type="file"
+                  className="file-input"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </label>
+              {fileName && <div className="file-name">{fileName}</div>}
+            </div>
+
+            {uploadedBgImage && (
+              <>
+                <div className="image-preview">
+                  <img src={uploadedBgImage} alt="Vista previa" />
+                </div>
+                <button 
+                  className="action-button primary"
+                  onClick={onApplyImageBg}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Aplicar como fondo
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Paleta de colores */}
+          {palette.length > 0 && (
+            <div className="control-group">
+              <h3 className="section-title">Paleta extraída</h3>
+              <div className="palette">
+                {palette.map((color, i) => (
+                  <div
+                    key={i}
+                    className="palette-color"
+                    style={{ backgroundColor: color }}
+                    onClick={() => onPaletteClick(color)}
+                  />
+                ))}
+              </div>
+              <p className="info-text">Click: color de fondo | Doble click: color de texto</p>
+            </div>
+          )}
+        </AccordionSection>
+
+        <AccordionSection title="Texto" defaultOpen={true}>
+          {/* Color de texto */}
+          <div className="control-group">
+            <h3 className="section-title">Color de texto</h3>
+            <div className="control-row">
+              <div className="color-picker-container">
+                <div 
+                  className="color-swatch" 
+                  style={{ backgroundColor: textColor }}
+                  onClick={toggleTextPicker}
+                />
+                {showTextPicker && (
+                  <div className="color-picker-popover" ref={textPickerRef}>
+                    <ChromePicker
+                      color={textColor}
+                      onChange={(c) => onTextColorChange(c.hex)}
+                      disableAlpha
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Cita */}
+          <div className="control-group">
+            <h3 className="section-title">Cita</h3>
+            <textarea
+              value={quote}
+              onChange={(e) => onQuoteChange(e.target.value)}
+              placeholder="Escribe la cita..."
+              className="mb-2"
             />
 
-            {/* Componente de ColorPickers */}
-            <ColorPickers 
-              bgColor={bgColor}
-              textColor={textColor}
-              showBgPicker={showBgPicker}
-              showTextPicker={showTextPicker}
-              toggleBgPicker={toggleBgPicker}
-              toggleTextPicker={toggleTextPicker}
-              onBgColorChange={onBgColorChange}
-              onTextColorChange={onTextColorChange}
-            />
-          </AccordionContent>
-        </AccordionItem>
+            <div className="control-row">
+              <button
+                className="style-button"
+                onClick={() => onToggleStyle("fontWeight", "bold")}
+                title="Negrita"
+              >
+                B
+              </button>
+              <button
+                className="style-button"
+                onClick={() => onToggleStyle("fontStyle", "italic")}
+                title="Cursiva"
+              >
+                I
+              </button>
+              <button
+                className="style-button"
+                onClick={() => onToggleStyle("underline", true)}
+                title="Subrayado"
+              >
+                U
+              </button>
 
-        <AccordionItem value="texto">
-          <AccordionTrigger>Texto</AccordionTrigger>
-          <AccordionContent>
-            <QuoteControls
-              quote={quote}
-              onQuoteChange={onQuoteChange}
-              onToggleStyle={onToggleStyle}
-              onFontSizeChange={onFontSizeChange}
-              onFontChange={onFontChange}
-              onAlignChange={onAlignChange}
-            />
-            <SignatureControls
-              signature={signature}
-              onChange={onSignatureChange}
-              onToggleStyle={onToggleStyle}
-              onFontSizeChange={onFontSizeSignatureChange}
-              onFontChange={onFontSignatureChange}
-              onAlignChange={onAlignSignatureChange}
-            />
-          </AccordionContent>
-        </AccordionItem>
+              <input
+                type="number"
+                min={12}
+                max={72}
+                defaultValue={48}
+                onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
+                title="Tamaño de fuente"
+              />
+            </div>
 
-        <AccordionItem value="formas">
-          <AccordionTrigger>Formas</AccordionTrigger>
-          <AccordionContent>
-            <ShapeControls
-              strokeColor={strokeColor}
-              strokeWidth={strokeWidth}
-              addShape={addShape}
-              onStrokeColorChange={handleStrokeColorChange}
-              onStrokeWidthChange={handleStrokeWidthChange}
+            <div className="control-row">
+              <select
+                onChange={(e) => onFontChange(e.target.value)}
+                defaultValue="serif"
+              >
+                <option value="serif">Serif</option>
+                <option value="sans-serif">Sans Serif</option>
+                <option value="monospace">Monospace</option>
+              </select>
+
+              <select
+                onChange={(e) => onAlignChange(e.target.value)}
+                defaultValue="left"
+              >
+                <option value="left">Izquierda</option>
+                <option value="center">Centro</option>
+                <option value="right">Derecha</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Firma */}
+          <div className="control-group">
+            <h3 className="section-title">Firma</h3>
+            <textarea
+              value={signature}
+              onChange={(e) => onSignatureChange(e.target.value)}
+              rows={1}
+              placeholder="Autor de la cita..."
+              className="mb-2"
             />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+
+            <div className="control-row">
+              <button
+                className="style-button"
+                onClick={() => onToggleStyle("fontWeight", "bold")}
+                title="Negrita"
+              >
+                B
+              </button>
+              <button
+                className="style-button"
+                onClick={() => onToggleStyle("fontStyle", "italic")}
+                title="Cursiva"
+              >
+                I
+              </button>
+
+              <input
+                type="number"
+                min={8}
+                max={48}
+                defaultValue={32}
+                onChange={(e) => onFontSizeSignatureChange(parseInt(e.target.value))}
+                title="Tamaño de fuente"
+              />
+            </div>
+
+            <div className="control-row">
+              <select
+                onChange={(e) => onFontSignatureChange(e.target.value)}
+                defaultValue="serif"
+              >
+                <option value="serif">Serif</option>
+                <option value="sans-serif">Sans Serif</option>
+                <option value="monospace">Monospace</option>
+              </select>
+
+              <select
+                onChange={(e) => onAlignSignatureChange(e.target.value)}
+                defaultValue="right"
+              >
+                <option value="left">Izquierda</option>
+                <option value="center">Centro</option>
+                <option value="right">Derecha</option>
+              </select>
+            </div>
+          </div>
+        </AccordionSection>
+
+        <AccordionSection title="Formas" defaultOpen={true}>
+          <div className="control-group">
+            <h3 className="section-title">Añadir formas</h3>
+            <div className="shapes-grid">
+              <button
+                className="action-button"
+                onClick={() => addShape("line")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Línea
+              </button>
+
+              <button
+                className="action-button"
+                onClick={() => addShape("arrow")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+                Flecha
+              </button>
+
+              <button
+                className="action-button"
+                onClick={() => addShape("rect")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                </svg>
+                Rectángulo
+              </button>
+
+              <button
+                className="action-button"
+                onClick={() => addShape("circle")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+                Círculo
+              </button>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <h3 className="section-title">Estilo de trazo</h3>
+            <div className="control-row">
+              <div>
+                <input
+                  type="color"
+                  value={strokeColor}
+                  onChange={(e) => handleStrokeColorChange(e.target.value)}
+                  className="color-swatch"
+                />
+              </div>
+
+              <div>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={strokeWidth}
+                  onChange={(e) => handleStrokeWidthChange(parseInt(e.target.value))}
+                  title="Grosor de trazo"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <p className="info-text">Consejo: Selecciona una forma para editar su estilo o elimínala con la tecla Delete</p>
+          </div>
+        </AccordionSection>
+      </div>
     </div>
   );
 };
