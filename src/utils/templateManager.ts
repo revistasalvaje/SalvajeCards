@@ -45,6 +45,64 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
+export async function loadAllPlantillasIndexedDB(): Promise<Plantilla[]> {
+  try {
+    console.log("Intentando cargar todas las plantillas...");
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+
+    return new Promise((resolve, reject) => {
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const result = request.result as Plantilla[];
+        console.log(`IndexedDB: ${result.length} plantillas recuperadas`);
+        resolve(result);
+      };
+
+      request.onerror = () => {
+        console.error("Error al recuperar plantillas:", request.error);
+        reject(request.error);
+      };
+    });
+  } catch (error) {
+    console.error("Error al abrir la base de datos para recuperar plantillas:", error);
+    return [];
+  }
+}
+
+export async function cargarPlantillaIndexedDB(id: string): Promise<Plantilla | null> {
+  try {
+    console.log("Intentando cargar plantilla con ID:", id);
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+
+    return new Promise((resolve, reject) => {
+      const request = store.get(id);
+
+      request.onsuccess = () => {
+        const resultado = request.result || null;
+        if (resultado) {
+          console.log("IndexedDB: Plantilla recuperada:", resultado.name);
+        } else {
+          console.warn("IndexedDB: No se encontró plantilla con ID:", id);
+        }
+        resolve(resultado);
+      };
+
+      request.onerror = () => {
+        console.error("Error al recuperar plantilla:", request.error);
+        reject(request.error);
+      };
+    });
+  } catch (error) {
+    console.error("Error al abrir la base de datos para cargar plantilla:", error);
+    return null;
+  }
+}
+
 export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: string): Promise<Plantilla> {
   try {
     if (!canvas) {
@@ -57,9 +115,9 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
     console.log("Objetos en el canvas:", objects);
 
     // Procesar objetos de texto
-    const quote = objects.find((o) => o.type === "textbox" || o.type === "i-text" && (o as any).name !== "signature") as fabric.Textbox;
-    const signature = objects.find((o) => (o.type === "textbox" || o.type === "i-text") && (o as any).name === "signature") as fabric.Textbox;
-    const shapes = objects.filter((o) => o.type !== "textbox" && o.type !== "i-text");
+    const quote = objects.find((o) => o.type === "textbox" && (o as any).name !== "signature") as fabric.Textbox;
+    const signature = objects.find((o) => o.type === "textbox" && (o as any).name === "signature") as fabric.Textbox;
+    const shapes = objects.filter((o) => o.type !== "textbox");
 
     // Determinar tipo y valor de fondo
     let bgType = "color";
@@ -126,6 +184,9 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
         top: s.top,
         stroke: (s as any).stroke,
         strokeWidth: (s as any).strokeWidth,
+        width: (s as any).width,
+        height: (s as any).height,
+        radius: (s as any).radius,
       })),
     };
 
@@ -157,62 +218,3 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
     console.error("Error al preparar la plantilla:", error);
     throw error;
   }
-}
-
-export async function loadAllPlantillasIndexedDB(): Promise<Plantilla[]> {
-  try {
-    console.log("Intentando cargar todas las plantillas...");
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-
-    return new Promise((resolve, reject) => {
-      const request = store.getAll();
-
-      request.onsuccess = () => {
-        const result = request.result as Plantilla[];
-        console.log(`IndexedDB: ${result.length} plantillas recuperadas`);
-        resolve(result);
-      };
-
-      request.onerror = () => {
-        console.error("Error al recuperar plantillas:", request.error);
-        reject(request.error);
-      };
-    });
-  } catch (error) {
-    console.error("Error al abrir la base de datos para recuperar plantillas:", error);
-    return [];
-  }
-}
-
-export async function cargarPlantillaIndexedDB(id: string): Promise<Plantilla | null> {
-  try {
-    console.log("Intentando cargar plantilla con ID:", id);
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-
-    return new Promise((resolve, reject) => {
-      const request = store.get(id);
-
-      request.onsuccess = () => {
-        const resultado = request.result || null;
-        if (resultado) {
-          console.log("IndexedDB: Plantilla recuperada:", resultado.name);
-        } else {
-          console.warn("IndexedDB: No se encontró plantilla con ID:", id);
-        }
-        resolve(resultado);
-      };
-
-      request.onerror = () => {
-        console.error("Error al recuperar plantilla:", request.error);
-        reject(request.error);
-      };
-    });
-  } catch (error) {
-    console.error("Error al abrir la base de datos para cargar plantilla:", error);
-    return null;
-  }
-}

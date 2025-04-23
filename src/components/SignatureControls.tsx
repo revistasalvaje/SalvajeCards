@@ -18,7 +18,7 @@ const SignatureControls: React.FC<SignatureControlsProps> = ({
   onAlignChange,
 }) => {
   return (
-    <div className="mb-6 w-full max-w-full">
+    <div className="mb-4 w-full max-w-full">
       <h3 className="text-sm font-semibold mb-2">Firma</h3>
       <div className="mb-2">
         <div className="mb-2">
@@ -29,18 +29,19 @@ const SignatureControls: React.FC<SignatureControlsProps> = ({
                 onChange={(e) => onChange(e.target.value)}
                 className="block w-full max-w-full p-2 border rounded text-sm mb-2 resize-none"
                 rows={2}
+                placeholder="Autor de la cita..."
               />
             </div>
           </div>
-
         </div>
       </div>
 
-      <div className="flex items-center gap-1 flex-nowrap overflow-hidden text-xs">
-        {["bold", "italic", "underline", "linethrough"].map((style, i) => (
+      {/* Controles rediseñados para ocupar menos espacio */}
+      <div className="flex flex-wrap items-center gap-1 text-xs w-full">
+        {["bold", "italic", "underline", "linethrough"].map((style) => (
           <button
             key={style}
-            className="w-7 h-7 border rounded shrink-0"
+            className="w-6 h-6 border rounded shrink-0 text-xs"
             onClick={() =>
               onToggleStyle(
                 style === "bold"
@@ -64,12 +65,13 @@ const SignatureControls: React.FC<SignatureControlsProps> = ({
           type="number"
           min={8}
           max={100}
-          className="w-10 px-1 py-0.5 border rounded text-center shrink-0"
+          defaultValue={32} // Valor predeterminado para el tamaño del texto de firma
+          className="w-9 px-1 py-0.5 border rounded text-center shrink-0 text-xs"
           onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
         />
 
         <select
-          className="px-1 py-0.5 border rounded shrink-0"
+          className="w-14 px-1 py-0.5 border rounded shrink-0 text-xs"
           onChange={(e) => onFontChange(e.target.value)}
         >
           <option value="serif">Serif</option>
@@ -78,12 +80,13 @@ const SignatureControls: React.FC<SignatureControlsProps> = ({
         </select>
 
         <select
-          className="px-1 py-0.5 border rounded shrink-0"
+          className="w-16 px-1 py-0.5 border rounded shrink-0 text-xs"
           onChange={(e) => onAlignChange(e.target.value)}
+          defaultValue="right"
         >
-          <option value="left">Izquierda</option>
+          <option value="left">Izq</option>
           <option value="center">Centro</option>
-          <option value="right">Derecha</option>
+          <option value="right">Der</option>
         </select>
       </div>
     </div>

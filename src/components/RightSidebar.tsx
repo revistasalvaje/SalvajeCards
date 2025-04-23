@@ -70,13 +70,13 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   handleStrokeWidthChange,
 }) => {
   return (
-    <div className="sidebar">
-      <h2>Controles</h2>
+    <div className="sidebar p-4 overflow-y-auto h-full">
+      <h2 className="text-lg font-semibold mb-4">Controles</h2>
 
       <Accordion type="multiple" className="w-full" defaultValue={["paleta", "texto", "formas"]}>
-        <AccordionItem value="paleta" className="accordion">
-          <AccordionTrigger className="accordion-header">Paleta</AccordionTrigger>
-          <AccordionContent className="accordion-content">
+        <AccordionItem value="paleta" className="border-none mb-2">
+          <AccordionTrigger className="text-sm py-2 font-semibold">Paleta</AccordionTrigger>
+          <AccordionContent className="pt-2 pb-4">
             <ImagePaletteUploader
               uploadedBgImage={uploadedBgImage}
               palette={palette}
@@ -99,9 +99,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="texto" className="accordion">
-          <AccordionTrigger className="accordion-header">Texto</AccordionTrigger>
-          <AccordionContent className="accordion-content">
+        <AccordionItem value="texto" className="border-none mb-2">
+          <AccordionTrigger className="text-sm py-2 font-semibold">Texto</AccordionTrigger>
+          <AccordionContent className="pt-2 pb-4">
             <QuoteControls
               quote={quote}
               onQuoteChange={onQuoteChange}
@@ -121,9 +121,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="formas" className="accordion">
-          <AccordionTrigger className="accordion-header">Formas</AccordionTrigger>
-          <AccordionContent className="accordion-content">
+        <AccordionItem value="formas" className="border-none mb-2">
+          <AccordionTrigger className="text-sm py-2 font-semibold">Formas</AccordionTrigger>
+          <AccordionContent className="pt-2 pb-4">
             <ShapeControls
               strokeColor={strokeColor}
               strokeWidth={strokeWidth}
