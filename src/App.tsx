@@ -1,9 +1,7 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import "./index.css";
 import "./styles.css";
 import "./styles-enhanced.css";
-import "./sidebar-styles.css";
-// import "./color-picker-fix.css"; // Importamos los estilos de corrección - Comenta esta línea si el archivo no existe aún
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
 import LeftSidebar from "./components/LeftSidebar";
@@ -18,12 +16,8 @@ export const EditorContext = createContext<{
   canvasInstance: React.MutableRefObject<fabric.Canvas | null>;
 }>({ canvasInstance: { current: null } });
 
-// Hay dos formas de exportar, asegúrate de usar solo una de ellas:
-
-// Método 1: Exportación por defecto como expresión
-const App = () => {
+function App() {
   const [canvasFormat, setCanvasFormat] = useState<'square' | 'portrait'>('square');
-  const [exporting, setExporting] = useState(false);
 
   const {
     canvasRef,
@@ -76,34 +70,6 @@ const App = () => {
     }
 
     canvas.renderAll();
-  };
-
-  const handleExport = () => {
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
-
-    setExporting(true);
-
-    try {
-      // Configurar exportación
-      const dataURL = canvas.toDataURL({
-        format: "jpeg",
-        quality: 0.9,
-        multiplier: 2 // Doble resolución para mejor calidad
-      });
-
-      // Crear enlace para descargar
-      const link = document.createElement("a");
-      link.href = dataURL;
-      link.download = `card-${new Date().getTime()}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error al exportar la imagen:", error);
-    } finally {
-      setExporting(false);
-    }
   };
 
   const updateCanvasBackgroundColor = (color: string) => {
@@ -218,8 +184,6 @@ const App = () => {
           <TopBar 
             onChangeFormat={handleFormatChange}
             currentFormat={canvasFormat}
-            exporting={exporting}
-            onExport={handleExport}
           />
 
           {/* Área de trabajo */}
@@ -282,7 +246,6 @@ const App = () => {
       </NotificationProvider>
     </EditorContext.Provider>
   );
-};
+}
 
-// Esta es la línea más importante - asegúrate de tener esta exportación por defecto
 export default App;
