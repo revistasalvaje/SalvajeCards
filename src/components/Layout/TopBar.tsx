@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
-import { EditorContext } from '../App';
-import { useNotification } from '../context/NotificationContext';
+import { EditorContext } from '../../App';
+import { useNotification } from '../../context/NotificationContext';
 
 interface TopBarProps {
   onChangeFormat: (format: 'square' | 'portrait') => void;

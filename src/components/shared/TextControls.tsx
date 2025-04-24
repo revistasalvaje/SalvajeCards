@@ -1,32 +1,42 @@
 import React from "react";
 
-interface QuoteControlsProps {
-  quote: string;
-  onQuoteChange: (text: string) => void;
+interface TextControlsProps {
+  text: string;
+  onChange: (text: string) => void;
   onToggleStyle: (style: string, value: any) => void;
   onFontSizeChange: (size: number) => void;
   onFontChange: (font: string) => void;
   onAlignChange: (align: string) => void;
+  defaultFontSize?: number;
+  defaultAlign?: string;
+  type: 'quote' | 'signature';
+  placeholder: string;
+  rows?: number;
 }
 
-const QuoteControls: React.FC<QuoteControlsProps> = ({
-  quote,
-  onQuoteChange,
+const TextControls: React.FC<TextControlsProps> = ({
+  text,
+  onChange,
   onToggleStyle,
   onFontSizeChange,
   onFontChange,
   onAlignChange,
+  defaultFontSize = 48,
+  defaultAlign = 'left',
+  type,
+  placeholder,
+  rows = 3
 }) => {
   return (
     <div className="control-group">
-      <h3>Cita</h3>
+      <h3>{type === 'quote' ? 'Cita' : 'Firma'}</h3>
 
       <textarea
-        value={quote}
-        onChange={(e) => onQuoteChange(e.target.value)}
+        value={text}
+        onChange={(e) => onChange(e.target.value)}
         className="mb-3"
-        rows={3}
-        placeholder="Escribe tu cita aquí..."
+        rows={rows}
+        placeholder={placeholder}
       />
 
       <div className="controls-row">
@@ -63,7 +73,7 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
           type="number"
           min={8}
           max={100}
-          defaultValue={48}
+          defaultValue={defaultFontSize}
           className="w-12 text-center"
           onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
           title="Tamaño de fuente"
@@ -79,11 +89,14 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
           <option value="serif">Serif</option>
           <option value="sans-serif">Sans Serif</option>
           <option value="monospace">Monospace</option>
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
         </select>
 
         <select
           className="flex-1"
           onChange={(e) => onAlignChange(e.target.value)}
+          defaultValue={defaultAlign}
           title="Alineación"
         >
           <option value="left">Izquierda</option>
@@ -95,4 +108,4 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
   );
 };
 
-export default QuoteControls;
+export default TextControls;

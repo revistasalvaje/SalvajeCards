@@ -1,16 +1,14 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext } from "react";
 import "./styles.css";
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
-import LeftSidebar from "./components/LeftSidebar";
-import CanvasEditor from "./components/CanvasEditor";
-import UpdatedRightSidebar from "./components/UpdatedRightSidebar";
-import TopBar from "./components/TopBar";
-import { useEditor } from "./components/useEditor";
+import LeftSidebar from "./components/Layout/LeftSidebar";
+import CanvasEditor from "./components/Editor/CanvasEditor";
+import RightSidebar from "./components/Layout/RightSidebar";
+import TopBar from "./components/Layout/TopBar";
+import { useEditor } from "./hooks/useEditor";
 import { NotificationProvider } from "./context/NotificationContext";
-import { useTemplateManager } from "./hooks/useTemplateManager";
 
-// Contexto global expandido para incluir referencias a los objetos de texto
 export const EditorContext = createContext<{
   canvasInstance: React.MutableRefObject<fabric.Canvas | null>;
   quoteTextRef?: React.MutableRefObject<fabric.Textbox | null>;
@@ -19,6 +17,9 @@ export const EditorContext = createContext<{
 
 function App() {
   const [canvasFormat, setCanvasFormat] = React.useState<'square' | 'portrait'>('square');
+  const [paletteClickCount, setPaletteClickCount] = React.useState(0);
+
+  const editorState = useEditor();
 
   const {
     canvasRef,
@@ -37,12 +38,6 @@ function App() {
     setBgColor,
     textColor,
     setTextColor,
-    showBgPicker,
-    setShowBgPicker,
-    showTextPicker,
-    setShowTextPicker,
-    paletteClickCount,
-    setPaletteClickCount,
     strokeColor,
     strokeWidth,
     addShape,
@@ -50,104 +45,53 @@ function App() {
     handleStrokeWidthChange,
     updateText,
     applyTextStyle
-  } = useEditor();
+  } = editorState;
 
-  // Usar el template manager para acceder a los estados de control sincronizados
-  const {
-    currentBgColor,
-    currentTextColor,
-    currentQuoteFontSize,
-    currentSignatureFontSize,
-    currentQuoteFont,
-    currentSignatureFont,
-    currentQuoteAlign,
-    currentSignatureAlign
-  } = useTemplateManager();
-
-  // Sincronizar los estados locales con los estados del template manager
-  useEffect(() => {
-    if (currentBgColor !== bgColor) {
-      console.log("Sincronizando color de fondo desde plantilla:", currentBgColor);
-      setBgColor(currentBgColor);
-    }
-  }, [currentBgColor]);
-
-  useEffect(() => {
-    if (currentTextColor !== textColor) {
-      console.log("Sincronizando color de texto desde plantilla:", currentTextColor);
-      setTextColor(currentTextColor);
-    }
-  }, [currentTextColor]);
-
-  // Sincronizar contenido de texto cuando cambian en el contexto
-  useEffect(() => {
-    if (quoteTextRef?.current?.text) {
-      setQuote(quoteTextRef.current.text);
-    }
-  }, [quoteTextRef?.current?.text]);
-
-  useEffect(() => {
-    if (signatureTextRef?.current?.text) {
-      setSignature(signatureTextRef.current.text);
-    }
-  }, [signatureTextRef?.current?.text]);
-
-  // Cambiar formato del canvas
+  // Handle canvas format change
   const handleFormatChange = (format: 'square' | 'portrait') => {
     setCanvasFormat(format);
 
     const canvas = canvasInstance.current;
     if (!canvas) return;
 
-    // Configurar dimensiones según formato
     const scale = 0.5;
     if (format === 'square') {
-      // Instagram Square: 1080x1080
       canvas.setWidth(1080 * scale);
       canvas.setHeight(1080 * scale);
       canvas.setDimensions({ width: 1080 * scale, height: 1080 * scale });
-
-      // Ajustar posición del texto de firma
-      if (signatureTextRef.current) {
-        signatureTextRef.current.set({
-          left: canvas.getWidth() - 60,
-          top: canvas.getHeight() - 60
-        });
-      }
     } else {
-      // Instagram Portrait: 1080x1350
       canvas.setWidth(1080 * scale);
       canvas.setHeight(1350 * scale);
       canvas.setDimensions({ width: 1080 * scale, height: 1350 * scale });
+    }
 
-      // Ajustar posición del texto de firma
-      if (signatureTextRef.current) {
-        signatureTextRef.current.set({
-          left: canvas.getWidth() - 60,
-          top: canvas.getHeight() - 60
-        });
-      }
+    // Adjust signature position
+    if (signatureTextRef.current) {
+      signatureTextRef.current.set({
+        left: canvas.getWidth() - 60,
+        top: canvas.getHeight() - 60
+      });
     }
 
     canvas.renderAll();
   };
 
+  // Update canvas background color
   const updateCanvasBackgroundColor = (color: string) => {
-    console.log("Actualizando color de fondo a:", color);
     setBgColor(color);
     const canvas = canvasInstance.current;
     if (!canvas) return;
+
     canvas.setBackgroundImage(null, () => {
       canvas.setBackgroundColor(color);
       canvas.renderAll();
     });
   };
 
+  // Update canvas text color
   const updateCanvasTextColor = (color: string) => {
-    console.log("Actualizando color de texto a:", color);
     setTextColor(color);
 
-    // Actualizar directamente los objetos de texto usando las referencias
     if (quoteTextRef.current) {
       quoteTextRef.current.set({ fill: color });
     }
@@ -159,6 +103,7 @@ function App() {
     canvasInstance.current?.renderAll();
   };
 
+  // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -186,15 +131,18 @@ function App() {
     reader.readAsDataURL(file);
   };
 
+  // Apply image as background
   const applyImageAsBackground = () => {
     if (!uploadedBgImage || !canvasInstance.current) return;
+
     fabric.Image.fromURL(uploadedBgImage, (img) => {
-      img.scaleToWidth(canvasInstance.current!.getWidth() * 2);  // Multiplicar por 2 debido al zoom 0.5
+      img.scaleToWidth(canvasInstance.current!.getWidth() * 2);
       const canvas = canvasInstance.current!;
       canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
     });
   };
 
+  // Handle palette color click
   const handlePaletteClick = (color: string) => {
     if (paletteClickCount % 2 === 0) {
       updateCanvasBackgroundColor(color);
@@ -204,17 +152,7 @@ function App() {
     setPaletteClickCount((count) => count + 1);
   };
 
-  const applyGlobalStyle = (type: "quote" | "signature", style: object) => {
-    // Aplicar estilo usando directamente las referencias
-    const targetRef = type === "quote" ? quoteTextRef : signatureTextRef;
-
-    if (targetRef?.current) {
-      console.log(`Aplicando estilo a ${type}:`, style);
-      targetRef.current.set(style);
-      canvasInstance.current?.renderAll();
-    }
-  };
-
+  // Toggle text style
   const toggleTextStyle = (style: string, value: any) => {
     const canvas = canvasInstance.current;
     const active = canvas?.getActiveObject();
@@ -240,31 +178,25 @@ function App() {
     <EditorContext.Provider value={{ canvasInstance, quoteTextRef, signatureTextRef }}>
       <NotificationProvider>
         <div className="app-container">
-          {/* Barra superior */}
           <TopBar 
             onChangeFormat={handleFormatChange}
             currentFormat={canvasFormat}
           />
 
-          {/* Área de trabajo */}
           <div className="main-content">
             <div className="sidebar left-sidebar">
               <LeftSidebar />
             </div>
 
             <div className="canvas-container">
-              <div className="canvas-wrapper">
-                <CanvasEditor canvasRef={canvasRef} />
-              </div>
+              <CanvasEditor canvasRef={canvasRef} />
             </div>
 
-            <UpdatedRightSidebar
+            <RightSidebar
               uploadedBgImage={uploadedBgImage}
               palette={palette}
               bgColor={bgColor}
               textColor={textColor}
-              showBgPicker={showBgPicker}
-              showTextPicker={showTextPicker}
               quote={quote}
               signature={signature}
               onImageUpload={handleImageUpload}
@@ -272,28 +204,26 @@ function App() {
               onPaletteClick={handlePaletteClick}
               onBgColorChange={updateCanvasBackgroundColor}
               onTextColorChange={updateCanvasTextColor}
-              toggleBgPicker={() => setShowBgPicker(!showBgPicker)}
-              toggleTextPicker={() => setShowTextPicker(!showTextPicker)}
               onQuoteChange={(text) => updateText(text, "quote")}
               onSignatureChange={(text) => updateText(text, "signature")}
               onToggleStyle={toggleTextStyle}
               onFontSizeChange={(size) =>
-                applyGlobalStyle("quote", { fontSize: size * 0.5 }) // Aplicar escala
+                applyTextStyle("quote", { fontSize: size * 0.5 })
               }
               onFontSizeSignatureChange={(size) =>
-                applyGlobalStyle("signature", { fontSize: size * 0.5 }) // Aplicar escala
+                applyTextStyle("signature", { fontSize: size * 0.5 })
               }
               onFontChange={(font) =>
-                applyGlobalStyle("quote", { fontFamily: font })
+                applyTextStyle("quote", { fontFamily: font })
               }
               onFontSignatureChange={(font) =>
-                applyGlobalStyle("signature", { fontFamily: font })
+                applyTextStyle("signature", { fontFamily: font })
               }
               onAlignChange={(align) =>
-                applyGlobalStyle("quote", { textAlign: align })
+                applyTextStyle("quote", { textAlign: align })
               }
               onAlignSignatureChange={(align) =>
-                applyGlobalStyle("signature", { textAlign: align })
+                applyTextStyle("signature", { textAlign: align })
               }
               strokeColor={strokeColor}
               strokeWidth={strokeWidth}

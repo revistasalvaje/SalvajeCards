@@ -3,10 +3,10 @@ import {
   guardarPlantillaIndexedDB,
   loadAllPlantillasIndexedDB,
   Plantilla,
-} from "../utils/templateManager";
-import { EditorContext } from "../App";
-import { useNotification } from "../context/NotificationContext";
-import { useTemplateManager } from "../hooks/useTemplateManager";
+} from "../../utils/templateManager";
+import { EditorContext } from "../../App";
+import { useNotification } from "../../context/NotificationContext";
+import { useTemplateManager } from "../../hooks/useTemplateManager";
 
 const LeftSidebar: React.FC = () => {
   const { canvasInstance } = useContext(EditorContext);
