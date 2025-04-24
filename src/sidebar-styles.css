@@ -547,3 +547,42 @@ canvas + div {
   position: fixed !important; /* Cambia a fixed en lugar de absolute */
   z-index: 9999 !important;
 }
+
+/* Solución para los color pickers */
+
+/* Primero, corregir los contenedores para que permitan que los elementos posicionados salgan de ellos */
+.sidebar-content, 
+.accordion-content, 
+.control-group {
+  overflow: visible !important;
+}
+
+/* Corregir el posicionamiento del popover del selector de color */
+.color-picker-popover {
+  position: fixed !important; /* Cambiar a fixed en lugar de absolute */
+  z-index: 9999 !important;  /* Asegurar que aparezca por encima de otros elementos */
+}
+
+/* Permitir que el contenedor del color picker sea visible fuera de su contenedor */
+.color-picker-container {
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Añadir estilos para transición suave al abrir/cerrar el popover */
+.color-picker-popover {
+  animation: fadeIn 0.2s ease-in-out;
+  transform-origin: top center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

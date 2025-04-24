@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChromePicker } from "react-color";
+import ColorPickers from "./ColorPickers"; // Importar el componente actualizado
 
 // Componente de Accordion simplificado
 const AccordionSection = ({ title, defaultOpen = false, children }) => {
@@ -79,57 +80,21 @@ const RightSidebar = ({
     onImageUpload(e);
   };
 
-  const bgPickerRef = useRef(null);
-  const textPickerRef = useRef(null);
-
-  // Cerrar pickers al hacer click fuera
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (showBgPicker && 
-          bgPickerRef.current && 
-          !bgPickerRef.current.contains(event.target)) {
-        toggleBgPicker();
-      }
-
-      if (showTextPicker && 
-          textPickerRef.current && 
-          !textPickerRef.current.contains(event.target)) {
-        toggleTextPicker();
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showBgPicker, showTextPicker, toggleBgPicker, toggleTextPicker]);
-
   return (
     <div className="sidebar">
       <div className="sidebar-content">
         <AccordionSection title="Fondo" defaultOpen={true}>
-          {/* Color de fondo */}
-          <div className="control-group">
-            <h3 className="section-title">Color de fondo</h3>
-            <div className="control-row">
-              <div className="color-picker-container">
-                <div 
-                  className="color-swatch" 
-                  style={{ backgroundColor: bgColor }}
-                  onClick={toggleBgPicker}
-                />
-                {showBgPicker && (
-                  <div className="color-picker-popover" ref={bgPickerRef}>
-                    <ChromePicker
-                      color={bgColor}
-                      onChange={(c) => onBgColorChange(c.hex)}
-                      disableAlpha
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* Color picker mejorado usando el componente actualizado */}
+          <ColorPickers
+            bgColor={bgColor}
+            textColor={textColor}
+            showBgPicker={showBgPicker}
+            showTextPicker={showTextPicker}
+            toggleBgPicker={toggleBgPicker}
+            toggleTextPicker={toggleTextPicker}
+            onBgColorChange={onBgColorChange}
+            onTextColorChange={onTextColorChange}
+          />
 
           {/* Imagen de fondo */}
           <div className="control-group">
@@ -190,29 +155,6 @@ const RightSidebar = ({
         </AccordionSection>
 
         <AccordionSection title="Texto" defaultOpen={true}>
-          {/* Color de texto */}
-          <div className="control-group">
-            <h3 className="section-title">Color de texto</h3>
-            <div className="control-row">
-              <div className="color-picker-container">
-                <div 
-                  className="color-swatch" 
-                  style={{ backgroundColor: textColor }}
-                  onClick={toggleTextPicker}
-                />
-                {showTextPicker && (
-                  <div className="color-picker-popover" ref={textPickerRef}>
-                    <ChromePicker
-                      color={textColor}
-                      onChange={(c) => onTextColorChange(c.hex)}
-                      disableAlpha
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Cita */}
           <div className="control-group">
             <h3 className="section-title">Cita</h3>
@@ -386,7 +328,7 @@ const RightSidebar = ({
           <div className="control-group">
             <h3 className="section-title">Estilo de trazo</h3>
             <div className="control-row">
-              <div>
+              <div className="relative">
                 <input
                   type="color"
                   value={strokeColor}
