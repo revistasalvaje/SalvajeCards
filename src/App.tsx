@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import "./styles.css";
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
@@ -8,10 +8,13 @@ import UpdatedRightSidebar from "./components/UpdatedRightSidebar";
 import TopBar from "./components/TopBar";
 import { useEditor } from "./components/useEditor";
 import { NotificationProvider } from "./context/NotificationContext";
+import { useTemplateManager } from "./hooks/useTemplateManager";
 
-// Contexto global para el canvas
+// Contexto global expandido para incluir referencias a los objetos de texto
 export const EditorContext = createContext<{
   canvasInstance: React.MutableRefObject<fabric.Canvas | null>;
+  quoteTextRef?: React.MutableRefObject<fabric.Textbox | null>;
+  signatureTextRef?: React.MutableRefObject<fabric.Textbox | null>;
 }>({ canvasInstance: { current: null } });
 
 function App() {
@@ -20,6 +23,8 @@ function App() {
   const {
     canvasRef,
     canvasInstance,
+    quoteTextRef,
+    signatureTextRef,
     quote,
     setQuote,
     signature,
@@ -44,7 +49,48 @@ function App() {
     handleStrokeColorChange,
     handleStrokeWidthChange,
     updateText,
+    applyTextStyle
   } = useEditor();
+
+  // Usar el template manager para acceder a los estados de control sincronizados
+  const {
+    currentBgColor,
+    currentTextColor,
+    currentQuoteFontSize,
+    currentSignatureFontSize,
+    currentQuoteFont,
+    currentSignatureFont,
+    currentQuoteAlign,
+    currentSignatureAlign
+  } = useTemplateManager();
+
+  // Sincronizar los estados locales con los estados del template manager
+  useEffect(() => {
+    if (currentBgColor !== bgColor) {
+      console.log("Sincronizando color de fondo desde plantilla:", currentBgColor);
+      setBgColor(currentBgColor);
+    }
+  }, [currentBgColor]);
+
+  useEffect(() => {
+    if (currentTextColor !== textColor) {
+      console.log("Sincronizando color de texto desde plantilla:", currentTextColor);
+      setTextColor(currentTextColor);
+    }
+  }, [currentTextColor]);
+
+  // Sincronizar contenido de texto cuando cambian en el contexto
+  useEffect(() => {
+    if (quoteTextRef?.current?.text) {
+      setQuote(quoteTextRef.current.text);
+    }
+  }, [quoteTextRef?.current?.text]);
+
+  useEffect(() => {
+    if (signatureTextRef?.current?.text) {
+      setSignature(signatureTextRef.current.text);
+    }
+  }, [signatureTextRef?.current?.text]);
 
   // Cambiar formato del canvas
   const handleFormatChange = (format: 'square' | 'portrait') => {
@@ -60,17 +106,34 @@ function App() {
       canvas.setWidth(1080 * scale);
       canvas.setHeight(1080 * scale);
       canvas.setDimensions({ width: 1080 * scale, height: 1080 * scale });
+
+      // Ajustar posición del texto de firma
+      if (signatureTextRef.current) {
+        signatureTextRef.current.set({
+          left: canvas.getWidth() - 60,
+          top: canvas.getHeight() - 60
+        });
+      }
     } else {
       // Instagram Portrait: 1080x1350
       canvas.setWidth(1080 * scale);
       canvas.setHeight(1350 * scale);
       canvas.setDimensions({ width: 1080 * scale, height: 1350 * scale });
+
+      // Ajustar posición del texto de firma
+      if (signatureTextRef.current) {
+        signatureTextRef.current.set({
+          left: canvas.getWidth() - 60,
+          top: canvas.getHeight() - 60
+        });
+      }
     }
 
     canvas.renderAll();
   };
 
   const updateCanvasBackgroundColor = (color: string) => {
+    console.log("Actualizando color de fondo a:", color);
     setBgColor(color);
     const canvas = canvasInstance.current;
     if (!canvas) return;
@@ -81,15 +144,19 @@ function App() {
   };
 
   const updateCanvasTextColor = (color: string) => {
+    console.log("Actualizando color de texto a:", color);
     setTextColor(color);
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
-    canvas.getObjects().forEach((obj) => {
-      if (obj.type === "textbox" || obj.type === "i-text") {
-        (obj as fabric.Textbox | fabric.IText).set({ fill: color });
-      }
-    });
-    canvas.renderAll();
+
+    // Actualizar directamente los objetos de texto usando las referencias
+    if (quoteTextRef.current) {
+      quoteTextRef.current.set({ fill: color });
+    }
+
+    if (signatureTextRef.current) {
+      signatureTextRef.current.set({ fill: color });
+    }
+
+    canvasInstance.current?.renderAll();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,18 +205,13 @@ function App() {
   };
 
   const applyGlobalStyle = (type: "quote" | "signature", style: object) => {
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
-    const target = canvas
-      .getObjects()
-      .find(
-        (o) =>
-          (o.type === "textbox" || o.type === "i-text") &&
-          (type === "quote" ? o.name !== "signature" : o.name === "signature"),
-      ) as fabric.Textbox | fabric.IText;
-    if (target) {
-      target.set(style);
-      canvas.renderAll();
+    // Aplicar estilo usando directamente las referencias
+    const targetRef = type === "quote" ? quoteTextRef : signatureTextRef;
+
+    if (targetRef?.current) {
+      console.log(`Aplicando estilo a ${type}:`, style);
+      targetRef.current.set(style);
+      canvasInstance.current?.renderAll();
     }
   };
 
@@ -175,7 +237,7 @@ function App() {
   };
 
   return (
-    <EditorContext.Provider value={{ canvasInstance }}>
+    <EditorContext.Provider value={{ canvasInstance, quoteTextRef, signatureTextRef }}>
       <NotificationProvider>
         <div className="app-container">
           {/* Barra superior */}
@@ -216,10 +278,10 @@ function App() {
               onSignatureChange={(text) => updateText(text, "signature")}
               onToggleStyle={toggleTextStyle}
               onFontSizeChange={(size) =>
-                applyGlobalStyle("quote", { fontSize: size })
+                applyGlobalStyle("quote", { fontSize: size * 0.5 }) // Aplicar escala
               }
               onFontSizeSignatureChange={(size) =>
-                applyGlobalStyle("signature", { fontSize: size })
+                applyGlobalStyle("signature", { fontSize: size * 0.5 }) // Aplicar escala
               }
               onFontChange={(font) =>
                 applyGlobalStyle("quote", { fontFamily: font })

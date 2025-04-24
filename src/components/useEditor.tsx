@@ -5,6 +5,10 @@ export function useEditor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasInstance = useRef<fabric.Canvas | null>(null);
 
+  // Referencias a los objetos de texto en el canvas
+  const quoteTextRef = useRef<fabric.Textbox | null>(null);
+  const signatureTextRef = useRef<fabric.Textbox | null>(null);
+
   const [quote, setQuote] = useState("");
   const [signature, setSignature] = useState("");
   const [uploadedBgImage, setUploadedBgImage] = useState<string | null>(null);
@@ -43,11 +47,15 @@ export function useEditor() {
     canvasInstance.current = canvas;
     console.log("Canvas inicializado correctamente:", canvasInstance.current);
 
+    // Crear campos de texto vacíos iniciales
+    initializeTextFields(canvas);
+
     // Borrar objeto seleccionado con Supr
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" || e.key === "Backspace") {
         const active = canvas.getActiveObject();
-        if (active) {
+        if (active && active !== quoteTextRef.current && active !== signatureTextRef.current) {
+          // Solo permitir borrar objetos que no sean los campos de texto principales
           canvas.remove(active);
           canvas.requestRenderAll();
         }
@@ -60,8 +68,57 @@ export function useEditor() {
       window.removeEventListener("keydown", handleKeyDown);
       canvas.dispose();
       canvasInstance.current = null;
+      quoteTextRef.current = null;
+      signatureTextRef.current = null;
     };
   }, []);
+
+  // Inicializar campos de texto vacíos
+  const initializeTextFields = (canvas: fabric.Canvas) => {
+    // Campo para la cita (parte superior)
+    const quoteText = new fabric.Textbox("", {
+      left: 100,
+      top: 100,
+      fontSize: 48 * 0.5, // Escala aplicada
+      fontFamily: "serif",
+      fill: textColor,
+      width: (canvas.getWidth() - 200),
+      breakWords: true,
+      name: "quote",
+      selectable: true,
+      hasControls: true,
+      editingBorderColor: "#2196F3",
+      borderColor: "#2196F3",
+      textAlign: "left",
+    });
+
+    // Campo para la firma (parte inferior)
+    const signatureText = new fabric.Textbox("", {
+      left: canvas.getWidth() - 60,
+      top: canvas.getHeight() - 60,
+      fontSize: 32 * 0.5, // Escala aplicada
+      fontFamily: "serif",
+      fill: textColor,
+      width: 200,
+      breakWords: true,
+      name: "signature",
+      originX: "right",
+      originY: "bottom",
+      selectable: true,
+      hasControls: true,
+      editingBorderColor: "#2196F3",
+      borderColor: "#2196F3",
+      textAlign: "right",
+    });
+
+    canvas.add(quoteText);
+    canvas.add(signatureText);
+    canvas.renderAll();
+
+    // Guardar referencias
+    quoteTextRef.current = quoteText;
+    signatureTextRef.current = signatureText;
+  }
 
   // Añadir forma al canvas
   const addShape = (type: "line" | "arrow" | "rect" | "circle") => {
@@ -199,47 +256,29 @@ export function useEditor() {
     const canvas = canvasInstance.current;
     if (!canvas) return;
 
-    const name = type === "signature" ? "signature" : "quote";
-    const setText = type === "signature" ? setSignature : setQuote;
-    const isSignature = type === "signature";
-
-    setText(content);
-
-    let obj = canvas
-      .getObjects()
-      .find(
-        (o) =>
-          (o.type === "textbox" || o.type === "i-text") &&
-          (isSignature ? o.name === "signature" : o.name === "quote"),
-      ) as fabric.Textbox | fabric.IText;
-
-    if (obj) {
-      obj.text = content;
-      canvas.renderAll();
+    // Actualizar el estado
+    if (type === "quote") {
+      setQuote(content);
+      // Actualizar directamente el objeto del canvas usando la referencia
+      if (quoteTextRef.current) {
+        quoteTextRef.current.set({ text: content });
+        canvas.renderAll();
+      }
     } else {
-      // Usar Textbox en lugar de IText para permitir envolver texto
-      const newText = new fabric.Textbox(content, {
-        left: isSignature ? canvas.getWidth() - 60 : 100,
-        top: isSignature ? canvas.getHeight() - 60 : 100,
-        originX: isSignature ? "right" : "left",
-        originY: isSignature ? "bottom" : "top",
-        fontSize: isSignature ? 32 : 48,
-        fill: textColor,
-        fontFamily: "serif",
-        editable: true,
-        name,
-        width: isSignature ? 200 : canvas.getWidth() - 200, // Ancho máximo para cita y firma
-        breakWords: true, // Permitir romper palabras largas
-        textAlign: isSignature ? "right" : "left", // Alineación predeterminada
-      });
-      canvas.add(newText).setActiveObject(newText);
-      canvas.renderAll();
+      setSignature(content);
+      // Actualizar directamente el objeto del canvas usando la referencia
+      if (signatureTextRef.current) {
+        signatureTextRef.current.set({ text: content });
+        canvas.renderAll();
+      }
     }
   };
 
   return {
     canvasRef,
     canvasInstance,
+    quoteTextRef,
+    signatureTextRef,
     isCanvasReady,
     quote,
     setQuote,

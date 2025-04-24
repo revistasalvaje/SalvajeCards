@@ -19,11 +19,21 @@ interface Notification {
 }
 
 export function useTemplateManager() {
-  const { canvasInstance } = useContext(EditorContext);
+  const { canvasInstance, quoteTextRef, signatureTextRef } = useContext(EditorContext);
   const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Estados para controlar la configuración actual
+  const [currentBgColor, setCurrentBgColor] = useState("#ffffff");
+  const [currentTextColor, setCurrentTextColor] = useState("#000000");
+  const [currentQuoteFontSize, setCurrentQuoteFontSize] = useState(48);
+  const [currentSignatureFontSize, setCurrentSignatureFontSize] = useState(32);
+  const [currentQuoteFont, setCurrentQuoteFont] = useState("serif");
+  const [currentSignatureFont, setCurrentSignatureFont] = useState("serif");
+  const [currentQuoteAlign, setCurrentQuoteAlign] = useState("left");
+  const [currentSignatureAlign, setCurrentSignatureAlign] = useState("right");
 
   // Cargar plantillas al inicio
   useEffect(() => {
@@ -74,10 +84,7 @@ export function useTemplateManager() {
     }
   };
 
-  // Cargar una plantilla existente
-  // Actualización de la función cargarPlantilla para gestionar correctamente la escala al 50%
-  // Esta función debe reemplazar a la implementación existente en src/hooks/useTemplateManager.ts
-
+  // Cargar una plantilla existente con sincronización de controles UI
   const cargarPlantilla = async (id: string) => {
     try {
       if (!canvasInstance.current) {
@@ -85,61 +92,134 @@ export function useTemplateManager() {
         return;
       }
 
+      // Añadir debugger
+      console.log("🚀 Iniciando carga de plantilla con ID:", id);
+
       const plantilla = await cargarPlantillaIndexedDB(id);
       if (!plantilla) {
         showNotification('No se pudo cargar la plantilla', 'error');
         return;
       }
 
-      const canvas = canvasInstance.current;
-      canvas.clear();
+      console.log("📄 Datos de la plantilla cargada:", JSON.stringify(plantilla, null, 2));
+      console.log("👉 Quote:", plantilla.quote);
+      console.log("👉 Signature:", plantilla.signature);
 
-      // Establecer fondo
+      const canvas = canvasInstance.current;
+
+      // Mantener los campos de texto pero eliminar otros objetos
+      const objects = canvas.getObjects();
+      objects.forEach(obj => {
+        if (obj !== quoteTextRef?.current && obj !== signatureTextRef?.current) {
+          canvas.remove(obj);
+        }
+      });
+
+      // Establecer fondo y actualizar control
       if (plantilla.bgType === "color") {
         canvas.setBackgroundColor(plantilla.bgValue, () => canvas.renderAll());
+        setCurrentBgColor(plantilla.bgValue);
+        console.log("🎨 Fondo establecido a color:", plantilla.bgValue);
       } else if (plantilla.bgType === "image" && plantilla.bgValue) {
         fabric.Image.fromURL(plantilla.bgValue, (img) => {
           // Ajustar la imagen de fondo al tamaño del canvas
           img.scaleToWidth(canvas.getWidth() * 2); // Multiplicamos por 2 para compensar la escala de 0.5
           canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+          console.log("🖼️ Fondo establecido a imagen");
         });
       }
 
-      // Añadir texto de cita
-      if (plantilla.quote) {
-        // Usar Textbox para permitir envolver texto
-        const q = new fabric.Textbox(plantilla.quote.text, {
-          left: plantilla.quote.left * 0.5, // Aplicar escala de 0.5
-          top: plantilla.quote.top * 0.5, // Aplicar escala de 0.5
-          fontSize: plantilla.quote.fontSize * 0.5, // Aplicar escala de 0.5
-          fontFamily: plantilla.quote.fontFamily,
-          textAlign: plantilla.quote.textAlign,
-          name: "quote",
-          width: (canvas.getWidth() - 100), // Ancho máximo ajustado
-          breakWords: true, // Permitir romper palabras largas
+      // Actualizar el texto de cita y sus controles
+      if (plantilla.quote && quoteTextRef?.current) {
+        // Determinar posición original y otras propiedades
+        const quoteObj = plantilla.quote;
+        const textColor = quoteObj.fill || "#000000";
+
+        console.log("📏 Quote - Posición original:", { left: quoteObj.left, top: quoteObj.top });
+        console.log("📏 Quote - Posición escalada:", { left: quoteObj.left * 0.5, top: quoteObj.top * 0.5 });
+        console.log("🔤 Quote - Propiedades:", { 
+          fontSize: quoteObj.fontSize, 
+          fontFamily: quoteObj.fontFamily, 
+          textAlign: quoteObj.textAlign, 
+          color: textColor 
         });
-        canvas.add(q);
+
+        // Actualizar el objeto de texto
+        quoteTextRef.current.set({
+          text: quoteObj.text || "",
+          left: quoteObj.left * 0.5, // Aplicar escala
+          top: quoteObj.top * 0.5, // Aplicar escala
+          fontSize: quoteObj.fontSize * 0.5, // Aplicar escala
+          fontFamily: quoteObj.fontFamily,
+          textAlign: quoteObj.textAlign,
+          fill: textColor,
+          styles: quoteObj.styles || {}
+        });
+
+        // Actualizar estados para controles UI - estos valores no se escalan
+        setCurrentQuoteFontSize(quoteObj.fontSize);
+        setCurrentQuoteFont(quoteObj.fontFamily);
+        setCurrentQuoteAlign(quoteObj.textAlign);
+        setCurrentTextColor(textColor);
+
+        console.log("✅ Quote actualizado con propiedades:", quoteTextRef.current);
+        console.log("✅ Estados de control Quote actualizados:", { 
+          fontSize: quoteObj.fontSize, 
+          fontFamily: quoteObj.fontFamily, 
+          textAlign: quoteObj.textAlign, 
+          textColor 
+        });
       }
 
-      // Añadir firma
-      if (plantilla.signature) {
-        // Usar Textbox para permitir envolver texto
-        const s = new fabric.Textbox(plantilla.signature.text, {
-          left: plantilla.signature.left * 0.5, // Aplicar escala de 0.5
-          top: plantilla.signature.top * 0.5, // Aplicar escala de 0.5
-          fontSize: plantilla.signature.fontSize * 0.5, // Aplicar escala de 0.5
-          fontFamily: plantilla.signature.fontFamily,
-          textAlign: plantilla.signature.textAlign,
-          name: "signature",
-          width: 200 * 0.5, // Ancho máximo para firma con escala
-          breakWords: true, // Permitir romper palabras largas
+      // Actualizar el texto de firma y sus controles
+      if (plantilla.signature && signatureTextRef?.current) {
+        // Determinar posición original
+        const signatureObj = plantilla.signature;
+        // Usar el mismo color de texto si no tiene uno específico
+        const signatureColor = signatureObj.fill || currentTextColor;
+
+        console.log("📏 Signature - Posición original:", { left: signatureObj.left, top: signatureObj.top });
+        console.log("📏 Signature - Posición escalada:", { left: signatureObj.left * 0.5, top: signatureObj.top * 0.5 });
+        console.log("🔤 Signature - Propiedades:", { 
+          fontSize: signatureObj.fontSize, 
+          fontFamily: signatureObj.fontFamily, 
+          textAlign: signatureObj.textAlign, 
+          color: signatureColor 
         });
-        canvas.add(s);
+
+        // Actualizar el objeto de texto
+        signatureTextRef.current.set({
+          text: signatureObj.text || "",
+          left: signatureObj.left * 0.5, // Aplicar escala
+          top: signatureObj.top * 0.5, // Aplicar escala
+          fontSize: signatureObj.fontSize * 0.5, // Aplicar escala
+          fontFamily: signatureObj.fontFamily,
+          textAlign: signatureObj.textAlign,
+          fill: signatureColor,
+          styles: signatureObj.styles || {}
+        });
+
+        // Actualizar estados para controles UI - estos valores no se escalan
+        setCurrentSignatureFontSize(signatureObj.fontSize);
+        setCurrentSignatureFont(signatureObj.fontFamily);
+        setCurrentSignatureAlign(signatureObj.textAlign);
+
+        console.log("✅ Signature actualizado con propiedades:", signatureTextRef.current);
+        console.log("✅ Estados de control Signature actualizados:", { 
+          fontSize: signatureObj.fontSize, 
+          fontFamily: signatureObj.fontFamily, 
+          textAlign: signatureObj.textAlign,
+          signatureColor 
+        });
       }
 
       // Añadir formas
       if (plantilla.shapes && plantilla.shapes.length > 0) {
-        plantilla.shapes.forEach((shape) => {
+        console.log("🔶 Añadiendo formas:", plantilla.shapes.length);
+
+        plantilla.shapes.forEach((shape, index) => {
+          console.log(`Forma ${index + 1}:`, shape);
+
           let obj;
           if (shape.type === "rect") {
             obj = new fabric.Rect({
@@ -207,11 +287,15 @@ export function useTemplateManager() {
             });
           }
 
-          if (obj) canvas.add(obj);
+          if (obj) {
+            canvas.add(obj);
+            console.log(`✅ Forma ${shape.type} añadida`);
+          }
         });
       }
 
       canvas.renderAll();
+      console.log("🎉 Renderizado completado");
       showNotification(`Plantilla "${plantilla.name}" cargada correctamente`, 'success');
     } catch (error) {
       console.error('Error al cargar la plantilla:', error);
@@ -246,6 +330,15 @@ export function useTemplateManager() {
     guardarPlantilla,
     cargarPlantilla,
     dismissNotification,
-    isCanvasReady
+    isCanvasReady,
+    // Estados de control
+    currentBgColor,
+    currentTextColor,
+    currentQuoteFontSize,
+    currentSignatureFontSize,
+    currentQuoteFont,
+    currentSignatureFont,
+    currentQuoteAlign,
+    currentSignatureAlign
   };
 }

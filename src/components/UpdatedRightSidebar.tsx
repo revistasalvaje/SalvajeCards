@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import ColorPicker from './ColorPicker';
+import { useTemplateManager } from '../hooks/useTemplateManager';
 
 interface RightSidebarProps {
   uploadedBgImage: string | null;
   palette: string[];
   bgColor: string;
   textColor: string;
+  showBgPicker: boolean;
+  showTextPicker: boolean;
   quote: string;
   signature: string;
-  strokeColor: string;
-  strokeWidth: number;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onApplyImageBg: () => void;
   onPaletteClick: (color: string) => void;
   onBgColorChange: (hex: string) => void;
   onTextColorChange: (hex: string) => void;
+  toggleBgPicker: () => void;
+  toggleTextPicker: () => void;
   onQuoteChange: (text: string) => void;
   onSignatureChange: (text: string) => void;
   onToggleStyle: (style: string, value: any) => void;
@@ -27,6 +30,8 @@ interface RightSidebarProps {
   addShape: (type: "line" | "arrow" | "rect" | "circle") => void;
   handleStrokeColorChange: (color: string) => void;
   handleStrokeWidthChange: (width: number) => void;
+  strokeColor: string;
+  strokeWidth: number;
 }
 
 const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
@@ -34,15 +39,17 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
   palette,
   bgColor,
   textColor,
+  showBgPicker,
+  showTextPicker,
   quote,
   signature,
-  strokeColor,
-  strokeWidth,
   onImageUpload,
   onApplyImageBg,
   onPaletteClick,
   onBgColorChange,
   onTextColorChange,
+  toggleBgPicker,
+  toggleTextPicker,
   onQuoteChange,
   onSignatureChange,
   onToggleStyle,
@@ -55,14 +62,127 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
   addShape,
   handleStrokeColorChange,
   handleStrokeWidthChange,
+  strokeColor,
+  strokeWidth
 }) => {
-  const [fileName, setFileName] = React.useState<string>("");
+  // Usar valores directamente del gestor de plantillas
+  const {
+    currentBgColor,
+    currentTextColor,
+    currentQuoteFontSize,
+    currentSignatureFontSize,
+    currentQuoteFont,
+    currentSignatureFont,
+    currentQuoteAlign,
+    currentSignatureAlign
+  } = useTemplateManager();
+
+  const [fileName, setFileName] = useState<string>("");
+
+  // Estados locales para controladores
+  const [quoteFontSize, setQuoteFontSize] = useState(currentQuoteFontSize || 48);
+  const [signatureFontSize, setSignatureFontSize] = useState(currentSignatureFontSize || 32);
+  const [quoteFont, setQuoteFont] = useState(currentQuoteFont || "serif");
+  const [signatureFont, setSignatureFont] = useState(currentSignatureFont || "serif");
+  const [quoteAlign, setQuoteAlign] = useState(currentQuoteAlign || "left");
+  const [signatureAlign, setSignatureAlign] = useState(currentSignatureAlign || "right");
+
+  // Debug de los valores actuales
+  useEffect(() => {
+    console.log("🎛️ Controles actuales:", { 
+      currentBgColor, 
+      currentTextColor,
+      currentQuoteFontSize,
+      currentSignatureFontSize,
+      currentQuoteFont,
+      currentSignatureFont,
+      currentQuoteAlign,
+      currentSignatureAlign
+    });
+  }, [
+    currentBgColor, 
+    currentTextColor,
+    currentQuoteFontSize,
+    currentSignatureFontSize,
+    currentQuoteFont,
+    currentSignatureFont,
+    currentQuoteAlign,
+    currentSignatureAlign
+  ]);
+
+  // Sincronizar estados cuando cambian los valores
+  useEffect(() => {
+    if (currentQuoteFontSize) {
+      setQuoteFontSize(currentQuoteFontSize);
+    }
+  }, [currentQuoteFontSize]);
+
+  useEffect(() => {
+    if (currentSignatureFontSize) {
+      setSignatureFontSize(currentSignatureFontSize);
+    }
+  }, [currentSignatureFontSize]);
+
+  useEffect(() => {
+    if (currentQuoteFont) {
+      setQuoteFont(currentQuoteFont);
+    }
+  }, [currentQuoteFont]);
+
+  useEffect(() => {
+    if (currentSignatureFont) {
+      setSignatureFont(currentSignatureFont);
+    }
+  }, [currentSignatureFont]);
+
+  useEffect(() => {
+    if (currentQuoteAlign) {
+      setQuoteAlign(currentQuoteAlign);
+    }
+  }, [currentQuoteAlign]);
+
+  useEffect(() => {
+    if (currentSignatureAlign) {
+      setSignatureAlign(currentSignatureAlign);
+    }
+  }, [currentSignatureAlign]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFileName(e.target.files[0].name);
     }
     onImageUpload(e);
+  };
+
+  // Manejadores con actualización de estado local
+  const handleQuoteFontSizeChange = (size: number) => {
+    setQuoteFontSize(size);
+    onFontSizeChange(size);
+  };
+
+  const handleSignatureFontSizeChange = (size: number) => {
+    setSignatureFontSize(size);
+    onFontSizeSignatureChange(size);
+  };
+
+  const handleQuoteFontChange = (font: string) => {
+    setQuoteFont(font);
+    onFontChange(font);
+  };
+
+  const handleSignatureFontChange = (font: string) => {
+    setSignatureFont(font);
+    onFontSignatureChange(font);
+  };
+
+  const handleQuoteAlignChange = (align: string) => {
+    setQuoteAlign(align);
+    onAlignChange(align);
+  };
+
+  const handleSignatureAlignChange = (align: string) => {
+    setSignatureAlign(align);
+    onAlignSignatureChange(align);
   };
 
   return (
@@ -83,13 +203,13 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
 
         <div className="control-row color-controls">
           <ColorPicker 
-            color={bgColor} 
+            color={currentBgColor || bgColor} 
             onChange={onBgColorChange} 
             label="Fondo" 
           />
 
           <ColorPicker 
-            color={textColor} 
+            color={currentTextColor || textColor} 
             onChange={onTextColorChange} 
             label="Texto" 
           />
@@ -167,13 +287,14 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
             type="number"
             min={8}
             max={100}
-            defaultValue={48}
-            onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
+            value={quoteFontSize}
+            onChange={(e) => handleQuoteFontSizeChange(parseInt(e.target.value))}
             title="Tamaño de fuente"
           />
 
           <select
-            onChange={(e) => onAlignChange(e.target.value)}
+            value={quoteAlign}
+            onChange={(e) => handleQuoteAlignChange(e.target.value)}
             title="Alineación"
             className="align-select"
           >
@@ -183,7 +304,8 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
           </select>
 
           <select
-            onChange={(e) => onFontChange(e.target.value)}
+            value={quoteFont}
+            onChange={(e) => handleQuoteFontChange(e.target.value)}
             title="Fuente"
             className="font-select"
           >
@@ -232,14 +354,14 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
             type="number"
             min={8}
             max={100}
-            defaultValue={32}
-            onChange={(e) => onFontSizeSignatureChange(parseInt(e.target.value))}
+            value={signatureFontSize}
+            onChange={(e) => handleSignatureFontSizeChange(parseInt(e.target.value))}
             title="Tamaño de fuente"
           />
 
           <select
-            onChange={(e) => onAlignSignatureChange(e.target.value)}
-            defaultValue="right"
+            value={signatureAlign}
+            onChange={(e) => handleSignatureAlignChange(e.target.value)}
             title="Alineación"
             className="align-select"
           >
@@ -249,7 +371,8 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
           </select>
 
           <select
-            onChange={(e) => onFontSignatureChange(e.target.value)}
+            value={signatureFont}
+            onChange={(e) => handleSignatureFontChange(e.target.value)}
             title="Fuente"
             className="font-select"
           >
