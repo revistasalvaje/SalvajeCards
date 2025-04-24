@@ -144,22 +144,28 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
     const objects = canvas.getObjects();
     console.log("Objetos en el canvas:", objects);
 
-    // Procesar objetos de texto
+    // Process text objects
     const quote = objects.find((o) => (o.type === "textbox" || o.type === "i-text") && (o as any).name === "quote") as fabric.Textbox | fabric.IText;
     const signature = objects.find((o) => (o.type === "textbox" || o.type === "i-text") && (o as any).name === "signature") as fabric.Textbox | fabric.IText;
-    const shapes = objects.filter((o) => o.type !== "textbox" && o.type !== "i-text" && !((o as any).name === "quote" || (o as any).name === "signature"));
+
+    // Get all shapes (non-text objects)
+    const shapes = objects.filter((o) => {
+      // Exclude text objects by name
+      return !(o.type === "textbox" || o.type === "i-text") && 
+             !((o as any).name === "quote" || (o as any).name === "signature");
+    });
 
     console.log("Quote object encontrado:", quote);
     console.log("Signature object encontrado:", signature);
     console.log("Formas encontradas:", shapes.length);
 
-    // Determinar tipo y valor de fondo
+    // Determine background type and value
     let bgType = "color";
-    let bgValue = "#ffffff"; // Default blanco
+    let bgValue = "#ffffff"; // Default white
 
     if (canvas.backgroundImage) {
       bgType = "image";
-      // Intentar obtener la URL de la imagen de fondo
+      // Try to get the background image URL
       const bgImage = canvas.backgroundImage as any;
       try {
         bgValue = bgImage.src || bgImage._element?.src || "";
@@ -173,19 +179,19 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
       console.log("Color de fondo encontrado:", bgValue);
     }
 
-    // Generar miniatura
+    // Generate thumbnail
     let thumbnail;
     try {
       thumbnail = canvas.toDataURL({ format: "png", quality: 0.5 });
       console.log("Miniatura generada correctamente");
     } catch (error) {
       console.error("Error al generar miniatura:", error);
-      // Miniatura de respaldo en caso de error
+      // Fallback thumbnail in case of error
       thumbnail = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
     }
 
-    // Compensamos el factor de escala 0.5 multiplicando las coordenadas por 2
-    // para guardar las posiciones en escala 1.0
+    // Compensate for the 0.5 scale factor by multiplying coordinates by 2
+    // to store positions at 1.0 scale
     const scaleCompensation = 2.0;
 
     console.log("Quote antes de guardar:", quote ? {
@@ -212,10 +218,10 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
       bgValue: bgValue,
       quote: quote
         ? {
-            text: quote.text,
-            left: quote.left * scaleCompensation, // Compensar escala
-            top: quote.top * scaleCompensation, // Compensar escala
-            fontSize: (quote.fontSize || 24) * scaleCompensation, // Compensar escala
+            text: quote.text || "",
+            left: quote.left * scaleCompensation, // Scale compensation
+            top: quote.top * scaleCompensation, // Scale compensation
+            fontSize: (quote.fontSize || 24) * scaleCompensation, // Scale compensation
             fontFamily: quote.fontFamily || "serif",
             textAlign: quote.textAlign || "left",
             fill: quote.fill as string || "#000000",
@@ -225,10 +231,10 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
         : null,
       signature: signature
         ? {
-            text: signature.text,
-            left: signature.left * scaleCompensation, // Compensar escala
-            top: signature.top * scaleCompensation, // Compensar escala
-            fontSize: (signature.fontSize || 16) * scaleCompensation, // Compensar escala
+            text: signature.text || "",
+            left: signature.left * scaleCompensation, // Scale compensation
+            top: signature.top * scaleCompensation, // Scale compensation
+            fontSize: (signature.fontSize || 16) * scaleCompensation, // Scale compensation
             fontFamily: signature.fontFamily || "serif",
             textAlign: signature.textAlign || "right",
             fill: signature.fill as string || "#000000",
@@ -236,16 +242,32 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
             width: (signature as any).width ? (signature as any).width * scaleCompensation : undefined,
           }
         : null,
-      shapes: shapes.map((s) => ({
-        type: s.type,
-        left: s.left * scaleCompensation, // Compensar escala
-        top: s.top * scaleCompensation, // Compensar escala
-        stroke: (s as any).stroke || "#000000",
-        strokeWidth: ((s as any).strokeWidth || 1) * scaleCompensation, // Compensar escala
-        width: (s as any).width ? (s as any).width * scaleCompensation : undefined,
-        height: (s as any).height ? (s as any).height * scaleCompensation : undefined,
-        radius: (s as any).radius ? (s as any).radius * scaleCompensation : undefined,
-      })),
+      shapes: shapes.map((s) => {
+        let shapeData: any = {
+          type: s.type,
+          left: s.left * scaleCompensation, // Scale compensation
+          top: s.top * scaleCompensation, // Scale compensation
+          stroke: (s as any).stroke || "#000000",
+          strokeWidth: ((s as any).strokeWidth || 1) * scaleCompensation, // Scale compensation
+        };
+
+        // Add properties specific to shape types
+        if (s.type === "rect") {
+          shapeData.width = (s as any).width * scaleCompensation;
+          shapeData.height = (s as any).height * scaleCompensation;
+        } else if (s.type === "circle") {
+          shapeData.radius = (s as any).radius * scaleCompensation;
+        } else if (s.type === "line") {
+          // For lines, store width as the line length
+          const line = s as fabric.Line;
+          shapeData.width = line.width ? line.width * scaleCompensation : 150 * scaleCompensation;
+        } else if (s.type === "group") {
+          // For arrows (which are groups)
+          shapeData.width = (s as any).width ? (s as any).width * scaleCompensation : 150 * scaleCompensation;
+        }
+
+        return shapeData;
+      }),
     };
 
     console.log("Plantilla preparada para guardar:", JSON.stringify(plantilla, null, 2));

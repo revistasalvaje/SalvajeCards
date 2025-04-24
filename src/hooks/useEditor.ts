@@ -5,7 +5,7 @@ export function useEditor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasInstance = useRef<fabric.Canvas | null>(null);
 
-  // Text object references
+  // Text object references - critical for proper template loading/saving
   const quoteTextRef = useRef<fabric.Textbox | null>(null);
   const signatureTextRef = useRef<fabric.Textbox | null>(null);
 
@@ -44,6 +44,9 @@ export function useEditor() {
     // Initialize text fields
     initializeTextFields(canvas);
 
+    // Add guidelines
+    addGuidelines(canvas);
+
     // Handle key events for deletion
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" || e.key === "Backspace") {
@@ -66,13 +69,112 @@ export function useEditor() {
     };
   }, []);
 
+  // Add guide lines that won't be exported
+  const addGuidelines = (canvas: fabric.Canvas) => {
+    // Calculate dimensions
+    const width = canvas.getWidth() / 0.5; // Compensate for scale
+    const height = canvas.getHeight() / 0.5;
+
+    // Center horizontal guideline
+    const centerHLine = new fabric.Line([0, height / 2, width, height / 2], {
+      stroke: 'rgba(0, 140, 255, 0.5)',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true, // Won't be exported
+    });
+
+    // Center vertical guideline
+    const centerVLine = new fabric.Line([width / 2, 0, width / 2, height], {
+      stroke: 'rgba(0, 140, 255, 0.5)',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true, // Won't be exported
+    });
+
+    // 5% margin guidelines
+    const marginSize = width * 0.05;
+
+    // Top margin
+    const topMargin = new fabric.Line([0, marginSize, width, marginSize], {
+      stroke: 'rgba(255, 140, 0, 0.5)',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true,
+    });
+
+    // Bottom margin
+    const bottomMargin = new fabric.Line([0, height - marginSize, width, height - marginSize], {
+      stroke: 'rgba(255, 140, 0, 0.5)',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true,
+    });
+
+    // Left margin
+    const leftMargin = new fabric.Line([marginSize, 0, marginSize, height], {
+      stroke: 'rgba(255, 140, 0, 0.5)',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true,
+    });
+
+    // Right margin
+    const rightMargin = new fabric.Line([width - marginSize, 0, width - marginSize, height], {
+      stroke: 'rgba(255, 140, 0, 0.5)',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false,
+      excludeFromExport: true,
+    });
+
+    // Apply scale factor to position guidelines correctly
+    const scaleFactor = 0.5;
+    [centerHLine, centerVLine, topMargin, bottomMargin, leftMargin, rightMargin].forEach(line => {
+      line.set({
+        scaleX: scaleFactor,
+        scaleY: scaleFactor,
+      });
+    });
+
+    // Add guidelines to canvas
+    canvas.add(centerHLine, centerVLine, topMargin, bottomMargin, leftMargin, rightMargin);
+
+    // Make sure guidelines stay at the bottom layer
+    canvas.sendToBack(centerHLine);
+    canvas.sendToBack(centerVLine);
+    canvas.sendToBack(topMargin);
+    canvas.sendToBack(bottomMargin);
+    canvas.sendToBack(leftMargin);
+    canvas.sendToBack(rightMargin);
+  };
+
   // Initialize text fields
   const initializeTextFields = (canvas: fabric.Canvas) => {
-    // Quote text
+    // If text objects already exist on canvas load, don't recreate them
+    if (canvas.getObjects().some(obj => (obj as any).name === "quote") ||
+        canvas.getObjects().some(obj => (obj as any).name === "signature")) {
+      console.log("Text fields already exist on canvas, skipping initialization");
+      return;
+    }
+
+    console.log("Creating initial text fields");
+
+    // Quote text - updated with new default size of 96
     const quoteText = new fabric.Textbox("", {
       left: 100,
       top: 100,
-      fontSize: 48 * 0.5,
+      fontSize: 96 * 0.5, // Size 96 adjusted for 0.5 scale
       fontFamily: "serif",
       fill: textColor,
       width: (canvas.getWidth() - 200),
@@ -85,11 +187,11 @@ export function useEditor() {
       textAlign: "left",
     });
 
-    // Signature text
+    // Signature text - updated with new default size of 64
     const signatureText = new fabric.Textbox("", {
       left: canvas.getWidth() - 60,
       top: canvas.getHeight() - 60,
-      fontSize: 32 * 0.5,
+      fontSize: 64 * 0.5, // Size 64 adjusted for 0.5 scale
       fontFamily: "serif",
       fill: textColor,
       width: 200,
@@ -107,8 +209,15 @@ export function useEditor() {
     canvas.add(quoteText);
     canvas.add(signatureText);
 
+    // Store references to text objects
     quoteTextRef.current = quoteText;
     signatureTextRef.current = signatureText;
+
+    // Find text objects if they already exist
+    canvas.getObjects().forEach(obj => {
+      if ((obj as any).name === "quote") quoteTextRef.current = obj as fabric.Textbox;
+      if ((obj as any).name === "signature") signatureTextRef.current = obj as fabric.Textbox;
+    });
 
     canvas.renderAll();
   };
@@ -278,7 +387,9 @@ export function useEditor() {
     textColor,
     setTextColor,
     strokeColor,
+    setStrokeColor,
     strokeWidth,
+    setStrokeWidth,
     addShape,
     handleStrokeColorChange,
     handleStrokeWidthChange,

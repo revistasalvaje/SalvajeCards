@@ -1,23 +1,27 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   guardarPlantillaIndexedDB,
   loadAllPlantillasIndexedDB,
+  cargarPlantillaIndexedDB,
   Plantilla,
 } from "../../utils/templateManager";
 import { EditorContext } from "../../App";
 import { useNotification } from "../../context/NotificationContext";
-import { useTemplateManager } from "../../hooks/useTemplateManager";
+import { useTemplate } from "../../context/TemplateContext";
+import { renderTemplate } from "../../utils/templateRenderer";
 
 const LeftSidebar: React.FC = () => {
-  const { canvasInstance } = useContext(EditorContext);
+  const { canvasInstance, quoteTextRef, signatureTextRef } = useContext(EditorContext);
   const { showNotification } = useNotification();
-  const { cargarPlantilla } = useTemplateManager();  // Usar el hook useTemplateManager
+  const { values, updateValues } = useTemplate(); // Usar el contexto de plantilla
+
   const [nombre, setNombre] = useState("");
-  const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
 
-  useEffect(() => {
+  // Cargar plantillas al inicio
+  React.useEffect(() => {
     const cargarPlantillas = async () => {
       try {
         const data = await loadAllPlantillasIndexedDB();
@@ -68,10 +72,51 @@ const LeftSidebar: React.FC = () => {
         return;
       }
 
-      // Usar la función cargarPlantilla del hook useTemplateManager en lugar
-      // de la implementación propia que no escala correctamente
-      await cargarPlantilla(id);
+      console.log("🚀 Iniciando carga de plantilla con ID:", id);
 
+      const plantilla = await cargarPlantillaIndexedDB(id);
+      if (!plantilla) {
+        showNotification('No se pudo cargar la plantilla', 'error');
+        return;
+      }
+
+      console.log("📄 Datos de la plantilla cargada:", JSON.stringify(plantilla, null, 2));
+
+      const canvas = canvasInstance.current;
+
+      // Usar el renderizador de plantillas y obtener los datos
+      const templateData = await renderTemplate(
+        canvas,
+        plantilla,
+        quoteTextRef,
+        signatureTextRef
+      );
+
+      // Actualizar todos los valores en el contexto compartido
+      updateValues({
+        currentBgColor: templateData.bgColor,
+        currentTextColor: templateData.textColor,
+        currentQuoteFontSize: templateData.quoteFontSize,
+        currentSignatureFontSize: templateData.signatureFontSize,
+        currentQuoteFont: templateData.quoteFont,
+        currentSignatureFont: templateData.signatureFont,
+        currentQuoteAlign: templateData.quoteAlign,
+        currentSignatureAlign: templateData.signatureAlign,
+        currentQuoteText: templateData.quoteText,
+        currentSignatureText: templateData.signatureText
+      });
+
+      // Registrar actualizaciones
+      console.log("🎨 Valores actualizados en el contexto:", {
+        bgColor: templateData.bgColor,
+        textColor: templateData.textColor,
+        quoteFontSize: templateData.quoteFontSize,
+        signatureFontSize: templateData.signatureFontSize,
+        quoteText: templateData.quoteText,
+        signatureText: templateData.signatureText
+      });
+
+      showNotification(`Plantilla "${plantilla.name}" cargada correctamente`, 'success');
     } catch (error) {
       console.error("Error al cargar la plantilla:", error);
       showNotification('Error al cargar la plantilla', 'error');

@@ -8,12 +8,17 @@ import RightSidebar from "./components/Layout/RightSidebar";
 import TopBar from "./components/Layout/TopBar";
 import { useEditor } from "./hooks/useEditor";
 import { NotificationProvider } from "./context/NotificationContext";
+import { TemplateProvider } from "./context/TemplateContext";
 
 export const EditorContext = createContext<{
   canvasInstance: React.MutableRefObject<fabric.Canvas | null>;
-  quoteTextRef?: React.MutableRefObject<fabric.Textbox | null>;
-  signatureTextRef?: React.MutableRefObject<fabric.Textbox | null>;
-}>({ canvasInstance: { current: null } });
+  quoteTextRef: React.MutableRefObject<fabric.Textbox | null>;
+  signatureTextRef: React.MutableRefObject<fabric.Textbox | null>;
+}>({ 
+  canvasInstance: { current: null },
+  quoteTextRef: { current: null },
+  signatureTextRef: { current: null }
+});
 
 function App() {
   const [canvasFormat, setCanvasFormat] = React.useState<'square' | 'portrait'>('square');
@@ -83,8 +88,7 @@ function App() {
     if (!canvas) return;
 
     canvas.setBackgroundImage(null, () => {
-      canvas.setBackgroundColor(color);
-      canvas.renderAll();
+      canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
     });
   };
 
@@ -118,14 +122,18 @@ function App() {
       img.src = dataUrl;
 
       img.onload = () => {
-        const thief = new ColorThief();
-        const colors = thief.getPalette(img, 6);
-        const hexColors = colors.map(
-          ([r, g, b]) =>
-            `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`,
-        );
-        setPalette(hexColors);
-        setPaletteClickCount(0);
+        try {
+          const thief = new ColorThief();
+          const colors = thief.getPalette(img, 6);
+          const hexColors = colors.map(
+            ([r, g, b]) =>
+              `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`,
+          );
+          setPalette(hexColors);
+          setPaletteClickCount(0);
+        } catch (error) {
+          console.error("Error extracting colors from image:", error);
+        }
       };
     };
     reader.readAsDataURL(file);
@@ -148,6 +156,8 @@ function App() {
       updateCanvasBackgroundColor(color);
     } else {
       updateCanvasTextColor(color);
+      // Update stroke color when text color is updated from palette
+      handleStrokeColorChange(color);
     }
     setPaletteClickCount((count) => count + 1);
   };
@@ -177,62 +187,64 @@ function App() {
   return (
     <EditorContext.Provider value={{ canvasInstance, quoteTextRef, signatureTextRef }}>
       <NotificationProvider>
-        <div className="app-container">
-          <TopBar 
-            onChangeFormat={handleFormatChange}
-            currentFormat={canvasFormat}
-          />
-
-          <div className="main-content">
-            <div className="sidebar left-sidebar">
-              <LeftSidebar />
-            </div>
-
-            <div className="canvas-container">
-              <CanvasEditor canvasRef={canvasRef} />
-            </div>
-
-            <RightSidebar
-              uploadedBgImage={uploadedBgImage}
-              palette={palette}
-              bgColor={bgColor}
-              textColor={textColor}
-              quote={quote}
-              signature={signature}
-              onImageUpload={handleImageUpload}
-              onApplyImageBg={applyImageAsBackground}
-              onPaletteClick={handlePaletteClick}
-              onBgColorChange={updateCanvasBackgroundColor}
-              onTextColorChange={updateCanvasTextColor}
-              onQuoteChange={(text) => updateText(text, "quote")}
-              onSignatureChange={(text) => updateText(text, "signature")}
-              onToggleStyle={toggleTextStyle}
-              onFontSizeChange={(size) =>
-                applyTextStyle("quote", { fontSize: size * 0.5 })
-              }
-              onFontSizeSignatureChange={(size) =>
-                applyTextStyle("signature", { fontSize: size * 0.5 })
-              }
-              onFontChange={(font) =>
-                applyTextStyle("quote", { fontFamily: font })
-              }
-              onFontSignatureChange={(font) =>
-                applyTextStyle("signature", { fontFamily: font })
-              }
-              onAlignChange={(align) =>
-                applyTextStyle("quote", { textAlign: align })
-              }
-              onAlignSignatureChange={(align) =>
-                applyTextStyle("signature", { textAlign: align })
-              }
-              strokeColor={strokeColor}
-              strokeWidth={strokeWidth}
-              addShape={addShape}
-              handleStrokeColorChange={handleStrokeColorChange}
-              handleStrokeWidthChange={handleStrokeWidthChange}
+        <TemplateProvider>
+          <div className="app-container">
+            <TopBar 
+              onChangeFormat={handleFormatChange}
+              currentFormat={canvasFormat}
             />
+
+            <div className="main-content">
+              <div className="sidebar left-sidebar">
+                <LeftSidebar />
+              </div>
+
+              <div className="canvas-container">
+                <CanvasEditor canvasRef={canvasRef} />
+              </div>
+
+              <RightSidebar
+                uploadedBgImage={uploadedBgImage}
+                palette={palette}
+                bgColor={bgColor}
+                textColor={textColor}
+                quote={quote}
+                signature={signature}
+                onImageUpload={handleImageUpload}
+                onApplyImageBg={applyImageAsBackground}
+                onPaletteClick={handlePaletteClick}
+                onBgColorChange={updateCanvasBackgroundColor}
+                onTextColorChange={updateCanvasTextColor}
+                onQuoteChange={(text) => updateText(text, "quote")}
+                onSignatureChange={(text) => updateText(text, "signature")}
+                onToggleStyle={toggleTextStyle}
+                onFontSizeChange={(size) =>
+                  applyTextStyle("quote", { fontSize: size * 0.5 })
+                }
+                onFontSizeSignatureChange={(size) =>
+                  applyTextStyle("signature", { fontSize: size * 0.5 })
+                }
+                onFontChange={(font) =>
+                  applyTextStyle("quote", { fontFamily: font })
+                }
+                onFontSignatureChange={(font) =>
+                  applyTextStyle("signature", { fontFamily: font })
+                }
+                onAlignChange={(align) =>
+                  applyTextStyle("quote", { textAlign: align })
+                }
+                onAlignSignatureChange={(align) =>
+                  applyTextStyle("signature", { textAlign: align })
+                }
+                strokeColor={strokeColor}
+                strokeWidth={strokeWidth}
+                addShape={addShape}
+                handleStrokeColorChange={handleStrokeColorChange}
+                handleStrokeWidthChange={handleStrokeWidthChange}
+              />
+            </div>
           </div>
-        </div>
+        </TemplateProvider>
       </NotificationProvider>
     </EditorContext.Provider>
   );

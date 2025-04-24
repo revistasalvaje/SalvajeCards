@@ -28,14 +28,28 @@ export async function renderTemplate(
   // Set background
   await setBackground(canvas, plantilla.bgType, plantilla.bgValue);
 
-  // Set text elements
-  setTextElements(canvas, plantilla, quoteTextRef, signatureTextRef);
+  // Set text elements and return text color for state updates
+  const textColor = setTextElements(canvas, plantilla, quoteTextRef, signatureTextRef);
 
   // Add shapes
   addShapes(canvas, plantilla.shapes);
 
   canvas.renderAll();
   console.log("🎉 Template rendering complete");
+
+  // Return the extracted data for state updates
+  return {
+    textColor,
+    bgColor: plantilla.bgType === "color" ? plantilla.bgValue : "#ffffff",
+    quoteFontSize: plantilla.quote?.fontSize || 48,
+    signatureFontSize: plantilla.signature?.fontSize || 32,
+    quoteFont: plantilla.quote?.fontFamily || "serif",
+    signatureFont: plantilla.signature?.fontFamily || "serif",
+    quoteAlign: plantilla.quote?.textAlign || "left",
+    signatureAlign: plantilla.signature?.textAlign || "right",
+    quoteText: plantilla.quote?.text || "",
+    signatureText: plantilla.signature?.text || ""
+  };
 }
 
 async function setBackground(canvas: fabric.Canvas, bgType: string, bgValue: string): Promise<void> {
@@ -72,6 +86,8 @@ function setTextElements(
   // Extract text color (for state updates)
   let textColor = "#000000";
 
+  // IMPORTANT: Only update properties, don't create new objects!
+
   // Quote text
   if (plantilla.quote && quoteTextRef?.current) {
     const quoteObj = plantilla.quote;
@@ -88,6 +104,11 @@ function setTextElements(
       width: quoteObj.width ? quoteObj.width * SCALE_FACTOR : canvas.getWidth() - 200,
       styles: quoteObj.styles || {}
     });
+
+    // Ensure the text object is definitely on the canvas
+    if (!canvas.contains(quoteTextRef.current)) {
+      canvas.add(quoteTextRef.current);
+    }
   }
 
   // Signature text
@@ -106,6 +127,11 @@ function setTextElements(
       width: signatureObj.width ? signatureObj.width * SCALE_FACTOR : 200,
       styles: signatureObj.styles || {}
     });
+
+    // Ensure the text object is definitely on the canvas
+    if (!canvas.contains(signatureTextRef.current)) {
+      canvas.add(signatureTextRef.current);
+    }
   }
 
   return textColor;

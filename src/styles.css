@@ -633,3 +633,18 @@ input[type="number"] {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Fonts */
+@font-face {
+  font-family: 'Lyon';
+  src: url('/fonts/Lyon.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Moderat';
+  src: url('/fonts/Moderat.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
