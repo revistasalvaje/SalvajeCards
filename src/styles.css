@@ -1,4 +1,4 @@
-/* styles-unified.css - Estilo global unificado para CardGPT */
+/* styles-minimal.css - Rediseño minimalista para CardGPT */
 
 /* Variables */
 :root {
@@ -190,18 +190,27 @@ body {
 }
 
 .right-sidebar {
-  width: 300px;
+  width: 320px; /* Aumentado para encajar mejor todos los controles */
   border-left: 1px solid var(--border);
 }
 
-.sidebar h2 {
-  font-size: 16px;
+.section-container {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-container:last-child {
+  border-bottom: none;
+}
+
+.section-container h3 {
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: var(--text);
 }
 
-/* Canvas container - Eliminado el fondo gris */
+/* Canvas container */
 .canvas-container {
   flex: 1;
   display: flex;
@@ -222,40 +231,6 @@ body {
 canvas {
   display: block;
   border-radius: 4px;
-}
-
-/* Accordion personalizado */
-.accordion-item {
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.accordion-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  cursor: pointer;
-  user-select: none;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
-}
-
-.accordion-header:hover {
-  color: var(--primary);
-}
-
-.accordion-content {
-  padding: 8px 0 16px 0;
-}
-
-.accordion-icon {
-  transition: transform 0.2s;
-}
-
-.accordion-icon.open {
-  transform: rotate(180deg);
 }
 
 /* Color picker unificado */
@@ -324,6 +299,7 @@ input, textarea, select {
   color: var(--text);
   outline: none;
   transition: border-color 0.2s;
+  margin-bottom: 8px;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -331,10 +307,45 @@ input:focus, textarea:focus, select:focus {
 }
 
 input[type="number"] {
-  width: 60px;
+  width: 45px;
+  text-align: center;
 }
 
-/* Estilo de botones para texto */
+/* Texto */
+
+.text-controls .align-select {
+  width: 55px;
+}
+
+.text-controls .font-select {
+  width: 75px;
+}.text-controls {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.text-controls select,
+.text-controls input[type="number"],
+.text-controls button {
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.text-controls select {
+  width: 65px;
+  margin-bottom: 0;
+  text-align: center;
+  padding-left: 2px;
+  padding-right: 2px;
+  text-overflow: ellipsis;
+}
+
 .style-button {
   width: 28px;
   height: 28px;
@@ -347,6 +358,8 @@ input[type="number"] {
   color: var(--text);
   font-size: 12px;
   transition: all 0.2s;
+  margin: 0;
+  padding: 0;
 }
 
 .style-button:hover {
@@ -398,6 +411,7 @@ input[type="number"] {
 /* Input de archivo */
 .file-input-wrapper {
   position: relative;
+  margin-bottom: 12px;
 }
 
 .file-input {
@@ -435,11 +449,20 @@ input[type="number"] {
 }
 
 /* Paleta de colores */
+.palette-container {
+  margin: 12px 0;
+}
+
 .palette {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.palette-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 .palette-color {
@@ -470,6 +493,39 @@ input[type="number"] {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* Formas */
+.shapes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.shape-button {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shape-button:hover {
+  background-color: #e8eaed;
+}
+
+.shape-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.stroke-width-control {
+  display: flex;
+  align-items: center;
 }
 
 /* Toast de notificaciones */

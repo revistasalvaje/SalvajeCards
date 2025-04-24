@@ -1,5 +1,5 @@
 import React, { createContext } from "react";
-import "./styles-unified.css"; // Único archivo CSS unificado
+import "./styles.css";
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
 import LeftSidebar from "./components/LeftSidebar";

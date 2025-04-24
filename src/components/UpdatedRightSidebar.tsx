@@ -1,5 +1,4 @@
 import React from 'react';
-import { Accordion, AccordionItem } from './Accordion';
 import ColorPicker from './ColorPicker';
 
 interface RightSidebarProps {
@@ -68,266 +67,229 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
 
   return (
     <div className="sidebar right-sidebar">
-      <h2>Controles</h2>
-
-      <Accordion>
-        <AccordionItem title="Fondo" defaultOpen={true}>
-          <div className="control-group">
-            <div className="control-row">
-              <ColorPicker 
-                color={bgColor} 
-                onChange={onBgColorChange} 
-                label="Color de fondo" 
-              />
-
-              <ColorPicker 
-                color={textColor} 
-                onChange={onTextColorChange} 
-                label="Color de texto" 
-              />
-            </div>
-
-            <div className="control-group">
-              <label>Imagen de fondo</label>
-              <div className="file-input-wrapper">
-                <label className="file-input-label">
-                  Subir imagen
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="file-input"
-                  />
-                </label>
-                {fileName && <div className="file-name">{fileName}</div>}
-              </div>
-
-              {uploadedBgImage && (
-                <>
-                  <div className="image-preview">
-                    <img src={uploadedBgImage} alt="Imagen cargada" />
-                  </div>
-
-                  <button
-                    onClick={onApplyImageBg}
-                    className="btn btn-primary"
-                    style={{ width: '100%' }}
-                  >
-                    Usar como fondo
-                  </button>
-                </>
-              )}
-            </div>
-
-            {palette.length > 0 && (
-              <div className="control-group">
-                <label>Paleta extraída</label>
-                <div className="palette">
-                  {palette.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className="palette-color"
-                      style={{ backgroundColor: color }}
-                      onClick={() => onPaletteClick(color)}
-                      title={`Color ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-                <div className="text-xs text-gray-500">
-                  Click para aplicar al fondo / Doble click para texto
-                </div>
-              </div>
-            )}
-          </div>
-        </AccordionItem>
-
-        <AccordionItem title="Texto" defaultOpen={true}>
-          <div className="control-group">
-            <label>Cita</label>
-            <textarea
-              value={quote}
-              onChange={(e) => onQuoteChange(e.target.value)}
-              rows={3}
-              placeholder="Escribe tu cita aquí..."
+      <section className="section-container">
+        <div className="file-input-wrapper">
+          <label className="file-input-label">
+            Subir imagen
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="file-input"
             />
+          </label>
+          {fileName && <div className="file-name">{fileName}</div>}
+        </div>
 
-            <div className="control-row">
-              <button
-                className="style-button"
-                onClick={() => onToggleStyle("fontWeight", "bold")}
-                title="Negrita"
-              >
-                B
-              </button>
-              <button
-                className="style-button"
-                onClick={() => onToggleStyle("fontStyle", "italic")}
-                title="Cursiva"
-              >
-                I
-              </button>
-              <button
-                className="style-button"
-                onClick={() => onToggleStyle("underline", true)}
-                title="Subrayado"
-              >
-                U
-              </button>
+        <div className="control-row color-controls">
+          <ColorPicker 
+            color={bgColor} 
+            onChange={onBgColorChange} 
+            label="Fondo" 
+          />
 
-              <input
-                type="number"
-                min={8}
-                max={100}
-                defaultValue={48}
-                onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
-                title="Tamaño de fuente"
-              />
+          <ColorPicker 
+            color={textColor} 
+            onChange={onTextColorChange} 
+            label="Texto" 
+          />
+        </div>
 
-              <select
-                onChange={(e) => onAlignChange(e.target.value)}
-                title="Alineación"
-              >
-                <option value="left">Izq</option>
-                <option value="center">Centro</option>
-                <option value="right">Der</option>
-              </select>
+        {uploadedBgImage && (
+          <>
+            <div className="image-preview">
+              <img src={uploadedBgImage} alt="Imagen cargada" />
             </div>
 
-            <div className="control-row">
-              <select
-                style={{ width: '100%' }}
-                onChange={(e) => onFontChange(e.target.value)}
-                title="Fuente"
-              >
-                <option value="serif">Serif</option>
-                <option value="sans-serif">Sans Serif</option>
-                <option value="monospace">Monospace</option>
-                <option value="Arial">Arial</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Verdana">Verdana</option>
-              </select>
+            <button
+              onClick={onApplyImageBg}
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+            >
+              Usar como fondo
+            </button>
+          </>
+        )}
+
+        {palette.length > 0 && (
+          <div className="palette-container">
+            <div className="palette">
+              {palette.map((color, idx) => (
+                <div
+                  key={idx}
+                  className="palette-color"
+                  style={{ backgroundColor: color }}
+                  onClick={() => onPaletteClick(color)}
+                  title={`Color ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="palette-hint">
+              Click: fondo | Doble: texto
             </div>
           </div>
+        )}
+      </section>
 
-          <div className="control-group">
-            <label>Firma</label>
-            <textarea
-              value={signature}
-              onChange={(e) => onSignatureChange(e.target.value)}
-              rows={2}
-              placeholder="Autor de la cita..."
+      <section className="section-container">
+        <h3>Cita</h3>
+        <textarea
+          value={quote}
+          onChange={(e) => onQuoteChange(e.target.value)}
+          rows={3}
+          placeholder="Escribe tu cita aquí..."
+        />
+
+        <div className="text-controls">
+          <button
+            className="style-button"
+            onClick={() => onToggleStyle("fontWeight", "bold")}
+            title="Negrita"
+          >
+            B
+          </button>
+          <button
+            className="style-button"
+            onClick={() => onToggleStyle("fontStyle", "italic")}
+            title="Cursiva"
+          >
+            I
+          </button>
+          <button
+            className="style-button"
+            onClick={() => onToggleStyle("underline", true)}
+            title="Subrayado"
+          >
+            U
+          </button>
+
+          <input
+            type="number"
+            min={8}
+            max={100}
+            defaultValue={48}
+            onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
+            title="Tamaño de fuente"
+          />
+
+          <select
+            onChange={(e) => onAlignChange(e.target.value)}
+            title="Alineación"
+            className="align-select"
+          >
+            <option value="left">Izq</option>
+            <option value="center">Centro</option>
+            <option value="right">Der</option>
+          </select>
+
+          <select
+            onChange={(e) => onFontChange(e.target.value)}
+            title="Fuente"
+            className="font-select"
+          >
+            <option value="serif">Serif</option>
+            <option value="sans-serif">Sans</option>
+            <option value="monospace">Mono</option>
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+      </section>
+
+      <section className="section-container">
+        <h3>Firma</h3>
+        <textarea
+          value={signature}
+          onChange={(e) => onSignatureChange(e.target.value)}
+          rows={2}
+          placeholder="Autor de la cita..."
+        />
+
+        <div className="text-controls">
+          <button
+            className="style-button"
+            onClick={() => onToggleStyle("fontWeight", "bold")}
+            title="Negrita"
+          >
+            B
+          </button>
+          <button
+            className="style-button"
+            onClick={() => onToggleStyle("fontStyle", "italic")}
+            title="Cursiva"
+          >
+            I
+          </button>
+          <button
+            className="style-button"
+            onClick={() => onToggleStyle("underline", true)}
+            title="Subrayado"
+          >
+            U
+          </button>
+
+          <input
+            type="number"
+            min={8}
+            max={100}
+            defaultValue={32}
+            onChange={(e) => onFontSizeSignatureChange(parseInt(e.target.value))}
+            title="Tamaño de fuente"
+          />
+
+          <select
+            onChange={(e) => onAlignSignatureChange(e.target.value)}
+            defaultValue="right"
+            title="Alineación"
+            className="align-select"
+          >
+            <option value="left">Izq</option>
+            <option value="center">Centro</option>
+            <option value="right">Der</option>
+          </select>
+
+          <select
+            onChange={(e) => onFontSignatureChange(e.target.value)}
+            title="Fuente"
+            className="font-select"
+          >
+            <option value="serif">Serif</option>
+            <option value="sans-serif">Sans</option>
+            <option value="monospace">Mono</option>
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+      </section>
+
+      <section className="section-container">
+        <h3>Formas</h3>
+        <div className="shapes-grid">
+          <button onClick={() => addShape("line")} className="shape-button">Línea</button>
+          <button onClick={() => addShape("arrow")} className="shape-button">Flecha</button>
+          <button onClick={() => addShape("rect")} className="shape-button">Rectángulo</button>
+          <button onClick={() => addShape("circle")} className="shape-button">Círculo</button>
+        </div>
+
+        <div className="control-row shape-controls">
+          <div className="control-item">
+            <ColorPicker 
+              color={strokeColor} 
+              onChange={handleStrokeColorChange}
             />
-
-            <div className="control-row">
-              <button
-                className="style-button"
-                onClick={() => onToggleStyle("fontWeight", "bold")}
-                title="Negrita"
-              >
-                B
-              </button>
-              <button
-                className="style-button"
-                onClick={() => onToggleStyle("fontStyle", "italic")}
-                title="Cursiva"
-              >
-                I
-              </button>
-
-              <input
-                type="number"
-                min={8}
-                max={100}
-                defaultValue={32}
-                onChange={(e) => onFontSizeSignatureChange(parseInt(e.target.value))}
-                title="Tamaño de fuente"
-              />
-
-              <select
-                onChange={(e) => onAlignSignatureChange(e.target.value)}
-                defaultValue="right"
-                title="Alineación"
-              >
-                <option value="left">Izq</option>
-                <option value="center">Centro</option>
-                <option value="right">Der</option>
-              </select>
-            </div>
-
-            <div className="control-row">
-              <select
-                style={{ width: '100%' }}
-                onChange={(e) => onFontSignatureChange(e.target.value)}
-                title="Fuente"
-              >
-                <option value="serif">Serif</option>
-                <option value="sans-serif">Sans Serif</option>
-                <option value="monospace">Monospace</option>
-                <option value="Arial">Arial</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Verdana">Verdana</option>
-              </select>
-            </div>
           </div>
-        </AccordionItem>
 
-        <AccordionItem title="Formas" defaultOpen={true}>
-          <div className="control-group">
-            <label>Insertar forma</label>
-            <div className="control-row" style={{ flexWrap: 'wrap' }}>
-              <button 
-                onClick={() => addShape("line")} 
-                className="btn btn-secondary"
-                style={{ flex: '1 0 45%' }}
-              >
-                Línea
-              </button>
-              <button 
-                onClick={() => addShape("arrow")} 
-                className="btn btn-secondary"
-                style={{ flex: '1 0 45%' }}
-              >
-                Flecha
-              </button>
-              <button 
-                onClick={() => addShape("rect")} 
-                className="btn btn-secondary"
-                style={{ flex: '1 0 45%' }}
-              >
-                Rectángulo
-              </button>
-              <button 
-                onClick={() => addShape("circle")} 
-                className="btn btn-secondary"
-                style={{ flex: '1 0 45%' }}
-              >
-                Círculo
-              </button>
-            </div>
-
-            <div className="control-row" style={{ marginTop: '12px' }}>
-              <div>
-                <label>Color</label>
-                <ColorPicker 
-                  color={strokeColor} 
-                  onChange={handleStrokeColorChange}
-                />
-              </div>
-
-              <div>
-                <label>Grosor</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={strokeWidth}
-                  onChange={(e) => handleStrokeWidthChange(parseInt(e.target.value))}
-                />
-              </div>
-            </div>
+          <div className="stroke-width-control control-item">
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={strokeWidth}
+              onChange={(e) => handleStrokeWidthChange(parseInt(e.target.value))}
+            />
           </div>
-        </AccordionItem>
-      </Accordion>
+        </div>
+      </section>
     </div>
   );
 };

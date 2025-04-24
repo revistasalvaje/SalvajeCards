@@ -35,6 +35,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange, label }) => 
         className="color-swatch"
         style={{ backgroundColor: color }}
         onClick={() => setShowPicker(!showPicker)}
+        title={label || "Seleccionar color"}
       />
 
       {showPicker && (
