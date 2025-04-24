@@ -1,4 +1,3 @@
-// src/context/NotificationContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import NotificationToast, { NotificationType } from '../components/NotificationToast';
 
@@ -16,13 +15,17 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-// Nota: Exportación corregida aquí
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const showNotification = (message: string, type: NotificationType = 'info') => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, message, type }]);
+
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+      dismissNotification(id);
+    }, 5000);
   };
 
   const dismissNotification = (id: number) => {
@@ -34,7 +37,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       {children}
 
       {/* Contenedor de notificaciones */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm">
+      <div className="notifications-container">
         {notifications.map(notification => (
           <NotificationToast
             key={notification.id}

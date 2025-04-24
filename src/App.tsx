@@ -1,12 +1,10 @@
-import React, { createContext, useEffect, useState } from "react";
-import "./index.css";
-import "./styles.css";
-import "./styles-enhanced.css";
+import React, { createContext } from "react";
+import "./styles-unified.css"; // Único archivo CSS unificado
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
 import LeftSidebar from "./components/LeftSidebar";
 import CanvasEditor from "./components/CanvasEditor";
-import RightSidebar from "./components/RightSidebar";
+import UpdatedRightSidebar from "./components/UpdatedRightSidebar";
 import TopBar from "./components/TopBar";
 import { useEditor } from "./components/useEditor";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -17,7 +15,7 @@ export const EditorContext = createContext<{
 }>({ canvasInstance: { current: null } });
 
 function App() {
-  const [canvasFormat, setCanvasFormat] = useState<'square' | 'portrait'>('square');
+  const [canvasFormat, setCanvasFormat] = React.useState<'square' | 'portrait'>('square');
 
   const {
     canvasRef,
@@ -124,7 +122,7 @@ function App() {
   const applyImageAsBackground = () => {
     if (!uploadedBgImage || !canvasInstance.current) return;
     fabric.Image.fromURL(uploadedBgImage, (img) => {
-      img.scaleToWidth(1080);
+      img.scaleToWidth(canvasInstance.current!.getWidth() * 2);  // Multiplicar por 2 debido al zoom 0.5
       const canvas = canvasInstance.current!;
       canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
     });
@@ -179,7 +177,7 @@ function App() {
   return (
     <EditorContext.Provider value={{ canvasInstance }}>
       <NotificationProvider>
-        <div className="flex flex-col h-screen w-screen overflow-hidden bg-gray-100">
+        <div className="app-container">
           {/* Barra superior */}
           <TopBar 
             onChangeFormat={handleFormatChange}
@@ -187,60 +185,60 @@ function App() {
           />
 
           {/* Área de trabajo */}
-          <div className="flex flex-1 overflow-hidden">
-            <div className="flex-shrink-0 w-1/6 min-w-[180px] border-r border-gray-200">
+          <div className="main-content">
+            <div className="sidebar left-sidebar">
               <LeftSidebar />
             </div>
 
-            <div className="flex-1 flex items-center justify-center bg-gray-300">
-              <CanvasEditor canvasRef={canvasRef} />
+            <div className="canvas-container">
+              <div className="canvas-wrapper">
+                <CanvasEditor canvasRef={canvasRef} />
+              </div>
             </div>
 
-            <div className="flex-shrink-0 w-1/4 min-w-[280px] max-w-[360px] border-l border-gray-200">
-              <RightSidebar
-                uploadedBgImage={uploadedBgImage}
-                palette={palette}
-                bgColor={bgColor}
-                textColor={textColor}
-                showBgPicker={showBgPicker}
-                showTextPicker={showTextPicker}
-                quote={quote}
-                signature={signature}
-                onImageUpload={handleImageUpload}
-                onApplyImageBg={applyImageAsBackground}
-                onPaletteClick={handlePaletteClick}
-                onBgColorChange={updateCanvasBackgroundColor}
-                onTextColorChange={updateCanvasTextColor}
-                toggleBgPicker={() => setShowBgPicker(!showBgPicker)}
-                toggleTextPicker={() => setShowTextPicker(!showTextPicker)}
-                onQuoteChange={(text) => updateText(text, "quote")}
-                onSignatureChange={(text) => updateText(text, "signature")}
-                onToggleStyle={toggleTextStyle}
-                onFontSizeChange={(size) =>
-                  applyGlobalStyle("quote", { fontSize: size })
-                }
-                onFontSizeSignatureChange={(size) =>
-                  applyGlobalStyle("signature", { fontSize: size })
-                }
-                onFontChange={(font) =>
-                  applyGlobalStyle("quote", { fontFamily: font })
-                }
-                onFontSignatureChange={(font) =>
-                  applyGlobalStyle("signature", { fontFamily: font })
-                }
-                onAlignChange={(align) =>
-                  applyGlobalStyle("quote", { textAlign: align })
-                }
-                onAlignSignatureChange={(align) =>
-                  applyGlobalStyle("signature", { textAlign: align })
-                }
-                strokeColor={strokeColor}
-                strokeWidth={strokeWidth}
-                addShape={addShape}
-                handleStrokeColorChange={handleStrokeColorChange}
-                handleStrokeWidthChange={handleStrokeWidthChange}
-              />
-            </div>
+            <UpdatedRightSidebar
+              uploadedBgImage={uploadedBgImage}
+              palette={palette}
+              bgColor={bgColor}
+              textColor={textColor}
+              showBgPicker={showBgPicker}
+              showTextPicker={showTextPicker}
+              quote={quote}
+              signature={signature}
+              onImageUpload={handleImageUpload}
+              onApplyImageBg={applyImageAsBackground}
+              onPaletteClick={handlePaletteClick}
+              onBgColorChange={updateCanvasBackgroundColor}
+              onTextColorChange={updateCanvasTextColor}
+              toggleBgPicker={() => setShowBgPicker(!showBgPicker)}
+              toggleTextPicker={() => setShowTextPicker(!showTextPicker)}
+              onQuoteChange={(text) => updateText(text, "quote")}
+              onSignatureChange={(text) => updateText(text, "signature")}
+              onToggleStyle={toggleTextStyle}
+              onFontSizeChange={(size) =>
+                applyGlobalStyle("quote", { fontSize: size })
+              }
+              onFontSizeSignatureChange={(size) =>
+                applyGlobalStyle("signature", { fontSize: size })
+              }
+              onFontChange={(font) =>
+                applyGlobalStyle("quote", { fontFamily: font })
+              }
+              onFontSignatureChange={(font) =>
+                applyGlobalStyle("signature", { fontFamily: font })
+              }
+              onAlignChange={(align) =>
+                applyGlobalStyle("quote", { textAlign: align })
+              }
+              onAlignSignatureChange={(align) =>
+                applyGlobalStyle("signature", { textAlign: align })
+              }
+              strokeColor={strokeColor}
+              strokeWidth={strokeWidth}
+              addShape={addShape}
+              handleStrokeColorChange={handleStrokeColorChange}
+              handleStrokeWidthChange={handleStrokeWidthChange}
+            />
           </div>
         </div>
       </NotificationProvider>

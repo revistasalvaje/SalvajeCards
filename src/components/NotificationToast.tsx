@@ -1,4 +1,3 @@
-// src/components/NotificationToast.tsx
 import React, { useEffect } from 'react';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'warning';
@@ -18,53 +17,6 @@ const NotificationToast: React.FC<NotificationProps> = ({
   onDismiss,
   duration = 3000,
 }) => {
-  // Colores y estilos según tipo
-  const styles = {
-    success: {
-      bg: 'bg-green-100',
-      border: 'border-green-500',
-      text: 'text-green-700',
-      icon: (
-        <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-        </svg>
-      ),
-    },
-    error: {
-      bg: 'bg-red-100',
-      border: 'border-red-500',
-      text: 'text-red-700',
-      icon: (
-        <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-        </svg>
-      ),
-    },
-    warning: {
-      bg: 'bg-yellow-100',
-      border: 'border-yellow-500',
-      text: 'text-yellow-700',
-      icon: (
-        <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-        </svg>
-      ),
-    },
-    info: {
-      bg: 'bg-blue-100',
-      border: 'border-blue-500',
-      text: 'text-blue-700',
-      icon: (
-        <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2h.01a1 1 0 000-2H9z" clipRule="evenodd" />
-          <path d="M9 13a1 1 0 012 0v3a1 1 0 11-2 0v-3z" />
-        </svg>
-      ),
-    },
-  };
-
-  const style = styles[type];
-
   // Auto-eliminar después del tiempo especificado
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,22 +27,51 @@ const NotificationToast: React.FC<NotificationProps> = ({
   }, [id, onDismiss, duration]);
 
   return (
-    <div
-      className={`${style.bg} ${style.border} border-l-4 p-2 mb-2 rounded shadow-sm flex items-center animate-fade-in`}
-      style={{ animation: 'fadeIn 0.3s ease-in-out' }}
-    >
-      <div className="mr-2">{style.icon}</div>
-      <div className={`flex-grow ${style.text} text-sm`}>{message}</div>
+    <div className={`notification notification-${type}`}>
+      <div className="notification-icon">
+        {type === 'success' && (
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 18.3333C14.6024 18.3333 18.3334 14.6024 18.3334 10C18.3334 5.39763 14.6024 1.66667 10 1.66667C5.39765 1.66667 1.66669 5.39763 1.66669 10C1.66669 14.6024 5.39765 18.3333 10 18.3333Z" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M7.5 10L9.16667 11.6667L12.5 8.33334" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+
+        {type === 'error' && (
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 18.3333C14.6024 18.3333 18.3334 14.6024 18.3334 10C18.3334 5.39763 14.6024 1.66667 10 1.66667C5.39765 1.66667 1.66669 5.39763 1.66669 10C1.66669 14.6024 5.39765 18.3333 10 18.3333Z" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12.5 7.5L7.5 12.5" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M7.5 7.5L12.5 12.5" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+
+        {type === 'warning' && (
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 6.66667V10" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 13.3333H10.0083" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9.05 3.81667L1.71666 16.1833C1.5684 16.4311 1.50057 16.7242 1.5256 17.0192C1.55063 17.3141 1.66699 17.5909 1.85837 17.8084C2.04974 18.026 2.30371 18.1729 2.58552 18.2291C2.86732 18.2853 3.16062 18.2479 3.41666 18.1233L9.99999 15L16.5833 18.1233C16.8394 18.2479 17.1327 18.2853 17.4145 18.2291C17.6963 18.1729 17.9502 18.026 18.1416 17.8084C18.333 17.5909 18.4493 17.3141 18.4744 17.0192C18.4994 16.7242 18.4316 16.4311 18.2833 16.1833L10.95 3.81667C10.7961 3.58095 10.5735 3.39126 10.3089 3.27243C10.0444 3.1536 9.75097 3.10999 9.4625 3.14689C9.17403 3.18379 8.90506 3.29932 8.69057 3.47887C8.47608 3.65842 8.32673 3.89334 8.26666 4.15833L9.05 3.81667Z" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+
+        {type === 'info' && (
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 18.3333C14.6024 18.3333 18.3334 14.6024 18.3334 10C18.3334 5.39763 14.6024 1.66667 10 1.66667C5.39765 1.66667 1.66669 5.39763 1.66669 10C1.66669 14.6024 5.39765 18.3333 10 18.3333Z" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 13.3333V10" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 6.66667H10.0083" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+      </div>
+
+      <div className="notification-content">
+        {message}
+      </div>
+
       <button
         onClick={() => onDismiss(id)}
-        className="ml-2 text-gray-400 hover:text-gray-600"
+        className="notification-close"
       >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-            clipRule="evenodd"
-          />
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
     </div>
@@ -98,21 +79,3 @@ const NotificationToast: React.FC<NotificationProps> = ({
 };
 
 export default NotificationToast;
-
-// Agregar esto a tu tailwind.css o agregar la definición a tailwind.config.js
-/*
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-*/
