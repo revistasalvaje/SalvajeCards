@@ -107,6 +107,10 @@ export function useTemplateManager() {
 
       const canvas = canvasInstance.current;
 
+      // Importante: Resetear estados antes de cargar nueva plantilla
+      // para evitar problemas con cargas consecutivas
+      resetStates();
+
       // Mantener los campos de texto pero eliminar otros objetos
       const objects = canvas.getObjects();
       objects.forEach(obj => {
@@ -117,8 +121,16 @@ export function useTemplateManager() {
 
       // Establecer fondo y actualizar control
       if (plantilla.bgType === "color") {
-        canvas.setBackgroundColor(plantilla.bgValue, () => canvas.renderAll());
+        canvas.setBackgroundImage(null, () => {
+          canvas.setBackgroundColor(plantilla.bgValue, () => canvas.renderAll());
+        });
+        // IMPORTANTE: Actualizar el estado global del color de fondo
         setCurrentBgColor(plantilla.bgValue);
+        // También actualizar la propiedad directamente
+        window.setTimeout(() => {
+          // Actualizar con timeout para asegurar que el estado se propague
+          setCurrentBgColor(plantilla.bgValue);
+        }, 50);
         console.log("🎨 Fondo establecido a color:", plantilla.bgValue);
       } else if (plantilla.bgType === "image" && plantilla.bgValue) {
         fabric.Image.fromURL(plantilla.bgValue, (img) => {
@@ -129,14 +141,17 @@ export function useTemplateManager() {
         });
       }
 
+      // Extraer el color de texto para ambos elementos
+      let textColor = "#000000"; // Valor predeterminado
+
       // Actualizar el texto de cita y sus controles
       if (plantilla.quote && quoteTextRef?.current) {
         // Determinar posición original y otras propiedades
         const quoteObj = plantilla.quote;
-        const textColor = quoteObj.fill || "#000000";
+        textColor = quoteObj.fill || "#000000";
 
-        console.log("📏 Quote - Posición original:", { left: quoteObj.left, top: quoteObj.top });
-        console.log("📏 Quote - Posición escalada:", { left: quoteObj.left * 0.5, top: quoteObj.top * 0.5 });
+        console.log("📏 Quote - Posición original:", { left: quoteObj.left, top: quoteObj.top, width: quoteObj.width });
+        console.log("📏 Quote - Posición escalada:", { left: quoteObj.left * 0.5, top: quoteObj.top * 0.5, width: quoteObj.width ? quoteObj.width * 0.5 : null });
         console.log("🔤 Quote - Propiedades:", { 
           fontSize: quoteObj.fontSize, 
           fontFamily: quoteObj.fontFamily, 
@@ -153,6 +168,7 @@ export function useTemplateManager() {
           fontFamily: quoteObj.fontFamily,
           textAlign: quoteObj.textAlign,
           fill: textColor,
+          width: quoteObj.width ? quoteObj.width * 0.5 : canvas.getWidth() - 200, // Añadido ancho con escala
           styles: quoteObj.styles || {}
         });
 
@@ -160,26 +176,19 @@ export function useTemplateManager() {
         setCurrentQuoteFontSize(quoteObj.fontSize);
         setCurrentQuoteFont(quoteObj.fontFamily);
         setCurrentQuoteAlign(quoteObj.textAlign);
-        setCurrentTextColor(textColor);
 
         console.log("✅ Quote actualizado con propiedades:", quoteTextRef.current);
-        console.log("✅ Estados de control Quote actualizados:", { 
-          fontSize: quoteObj.fontSize, 
-          fontFamily: quoteObj.fontFamily, 
-          textAlign: quoteObj.textAlign, 
-          textColor 
-        });
       }
 
       // Actualizar el texto de firma y sus controles
       if (plantilla.signature && signatureTextRef?.current) {
         // Determinar posición original
         const signatureObj = plantilla.signature;
-        // Usar el mismo color de texto si no tiene uno específico
-        const signatureColor = signatureObj.fill || currentTextColor;
+        // Usar el color de texto de la firma, o el de la cita si no tiene uno específico
+        const signatureColor = signatureObj.fill || textColor;
 
-        console.log("📏 Signature - Posición original:", { left: signatureObj.left, top: signatureObj.top });
-        console.log("📏 Signature - Posición escalada:", { left: signatureObj.left * 0.5, top: signatureObj.top * 0.5 });
+        console.log("📏 Signature - Posición original:", { left: signatureObj.left, top: signatureObj.top, width: signatureObj.width });
+        console.log("📏 Signature - Posición escalada:", { left: signatureObj.left * 0.5, top: signatureObj.top * 0.5, width: signatureObj.width ? signatureObj.width * 0.5 : null });
         console.log("🔤 Signature - Propiedades:", { 
           fontSize: signatureObj.fontSize, 
           fontFamily: signatureObj.fontFamily, 
@@ -196,6 +205,7 @@ export function useTemplateManager() {
           fontFamily: signatureObj.fontFamily,
           textAlign: signatureObj.textAlign,
           fill: signatureColor,
+          width: signatureObj.width ? signatureObj.width * 0.5 : 200, // Añadido ancho con escala
           styles: signatureObj.styles || {}
         });
 
@@ -205,13 +215,19 @@ export function useTemplateManager() {
         setCurrentSignatureAlign(signatureObj.textAlign);
 
         console.log("✅ Signature actualizado con propiedades:", signatureTextRef.current);
-        console.log("✅ Estados de control Signature actualizados:", { 
-          fontSize: signatureObj.fontSize, 
-          fontFamily: signatureObj.fontFamily, 
-          textAlign: signatureObj.textAlign,
-          signatureColor 
-        });
       }
+
+      // IMPORTANTE: Actualizar el color de texto después de procesar ambos objetos
+      setCurrentTextColor(textColor);
+      console.log("🎨 Color de texto actualizado a:", textColor);
+
+      // Forzar actualización de estados con timeout
+      setTimeout(() => {
+        setCurrentTextColor(textColor);
+        if (plantilla.bgType === "color") {
+          setCurrentBgColor(plantilla.bgValue);
+        }
+      }, 100);
 
       // Añadir formas
       if (plantilla.shapes && plantilla.shapes.length > 0) {
@@ -301,6 +317,12 @@ export function useTemplateManager() {
       console.error('Error al cargar la plantilla:', error);
       showNotification('Error al cargar la plantilla', 'error');
     }
+  };
+
+  // Resetear estados antes de cargar una nueva plantilla
+  const resetStates = () => {
+    console.log("Reseteando estados para nueva carga");
+    // No reseteamos los colores porque los queremos heredar de la plantilla
   };
 
   // Sistema de notificaciones

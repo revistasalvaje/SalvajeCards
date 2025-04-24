@@ -80,37 +80,14 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
   const [fileName, setFileName] = useState<string>("");
 
   // Estados locales para controladores
-  const [quoteFontSize, setQuoteFontSize] = useState(currentQuoteFontSize || 48);
-  const [signatureFontSize, setSignatureFontSize] = useState(currentSignatureFontSize || 32);
-  const [quoteFont, setQuoteFont] = useState(currentQuoteFont || "serif");
-  const [signatureFont, setSignatureFont] = useState(currentSignatureFont || "serif");
-  const [quoteAlign, setQuoteAlign] = useState(currentQuoteAlign || "left");
-  const [signatureAlign, setSignatureAlign] = useState(currentSignatureAlign || "right");
+  const [quoteFontSize, setQuoteFontSize] = useState(48);
+  const [signatureFontSize, setSignatureFontSize] = useState(32);
+  const [quoteFont, setQuoteFont] = useState("serif");
+  const [signatureFont, setSignatureFont] = useState("serif");
+  const [quoteAlign, setQuoteAlign] = useState("left");
+  const [signatureAlign, setSignatureAlign] = useState("right");
 
-  // Debug de los valores actuales
-  useEffect(() => {
-    console.log("🎛️ Controles actuales:", { 
-      currentBgColor, 
-      currentTextColor,
-      currentQuoteFontSize,
-      currentSignatureFontSize,
-      currentQuoteFont,
-      currentSignatureFont,
-      currentQuoteAlign,
-      currentSignatureAlign
-    });
-  }, [
-    currentBgColor, 
-    currentTextColor,
-    currentQuoteFontSize,
-    currentSignatureFontSize,
-    currentQuoteFont,
-    currentSignatureFont,
-    currentQuoteAlign,
-    currentSignatureAlign
-  ]);
-
-  // Sincronizar estados cuando cambian los valores
+  // Sincronizar estados cuando cambian los valores del template manager
   useEffect(() => {
     if (currentQuoteFontSize) {
       setQuoteFontSize(currentQuoteFontSize);
@@ -146,6 +123,15 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = ({
       setSignatureAlign(currentSignatureAlign);
     }
   }, [currentSignatureAlign]);
+
+  // Logging para debug
+  useEffect(() => {
+    console.log("🔄 Sidebar - Color de fondo actualizado:", currentBgColor);
+  }, [currentBgColor]);
+
+  useEffect(() => {
+    console.log("🔄 Sidebar - Color de texto actualizado:", currentTextColor);
+  }, [currentTextColor]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

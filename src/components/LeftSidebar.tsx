@@ -2,16 +2,16 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   guardarPlantillaIndexedDB,
   loadAllPlantillasIndexedDB,
-  cargarPlantillaIndexedDB,
   Plantilla,
 } from "../utils/templateManager";
 import { EditorContext } from "../App";
 import { useNotification } from "../context/NotificationContext";
-import { fabric } from "fabric";
+import { useTemplateManager } from "../hooks/useTemplateManager";
 
 const LeftSidebar: React.FC = () => {
   const { canvasInstance } = useContext(EditorContext);
   const { showNotification } = useNotification();
+  const { cargarPlantilla } = useTemplateManager();  // Usar el hook useTemplateManager
   const [nombre, setNombre] = useState("");
   const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
   const [guardando, setGuardando] = useState(false);
@@ -68,81 +68,10 @@ const LeftSidebar: React.FC = () => {
         return;
       }
 
-      const plantilla = await cargarPlantillaIndexedDB(id);
-      if (!plantilla) {
-        showNotification('No se pudo cargar la plantilla', 'error');
-        return;
-      }
+      // Usar la función cargarPlantilla del hook useTemplateManager en lugar
+      // de la implementación propia que no escala correctamente
+      await cargarPlantilla(id);
 
-      const canvas = canvasInstance.current;
-      canvas.clear();
-
-      if (plantilla.bgType === "color") {
-        canvas.setBackgroundColor(plantilla.bgValue, () => canvas.renderAll());
-      } else if (plantilla.bgType === "image" && plantilla.bgValue) {
-        fabric.Image.fromURL(plantilla.bgValue, (img) => {
-          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-        });
-      }
-
-      if (plantilla.quote) {
-        const q = new fabric.Textbox(plantilla.quote.text, {
-          left: plantilla.quote.left,
-          top: plantilla.quote.top,
-          fontSize: plantilla.quote.fontSize,
-          fontFamily: plantilla.quote.fontFamily,
-          textAlign: plantilla.quote.textAlign,
-          name: "quote",
-        });
-        canvas.add(q);
-      }
-
-      if (plantilla.signature) {
-        const s = new fabric.Textbox(plantilla.signature.text, {
-          left: plantilla.signature.left,
-          top: plantilla.signature.top,
-          fontSize: plantilla.signature.fontSize,
-          fontFamily: plantilla.signature.fontFamily,
-          textAlign: plantilla.signature.textAlign,
-          name: "signature",
-        });
-        canvas.add(s);
-      }
-
-      if (plantilla.shapes && plantilla.shapes.length > 0) {
-        plantilla.shapes.forEach((shape) => {
-          let obj;
-          if (shape.type === "rect") {
-            obj = new fabric.Rect({
-              left: shape.left,
-              top: shape.top,
-              width: 120,
-              height: 80,
-              stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth,
-              fill: "transparent",
-            });
-          } else if (shape.type === "circle") {
-            obj = new fabric.Circle({
-              left: shape.left,
-              top: shape.top,
-              radius: 50,
-              stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth,
-              fill: "transparent",
-            });
-          } else if (shape.type === "line") {
-            obj = new fabric.Line([shape.left, shape.top, shape.left + 150, shape.top], {
-              stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth,
-            });
-          }
-          if (obj) canvas.add(obj);
-        });
-      }
-
-      canvas.renderAll();
-      showNotification(`Plantilla "${plantilla.name}" cargada correctamente`, 'success');
     } catch (error) {
       console.error("Error al cargar la plantilla:", error);
       showNotification('Error al cargar la plantilla', 'error');
