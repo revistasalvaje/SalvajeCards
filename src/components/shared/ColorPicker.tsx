@@ -11,7 +11,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange, label }) => 
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar picker cuando se hace clic fuera
+  // Debug color prop changes
+  useEffect(() => {
+    console.log(`ColorPicker ${label || 'unknown'} received color:`, color);
+  }, [color, label]);
+
+  // Close picker when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {

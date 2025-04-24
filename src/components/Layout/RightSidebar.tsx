@@ -30,7 +30,7 @@ interface RightSidebarProps {
   strokeWidth: number;
 }
 
-const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
+const RightSidebar: React.FC<RightSidebarProps> = (props) => {
   // Template manager values
   const {
     currentBgColor,
@@ -40,8 +40,20 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
     currentQuoteFont,
     currentSignatureFont,
     currentQuoteAlign,
-    currentSignatureAlign
+    currentSignatureAlign,
+    currentQuoteText,
+    currentSignatureText
   } = useTemplateManager();
+
+  // Log values on render for debugging
+  useEffect(() => {
+    console.log("🎨 RightSidebar - Rendered with values:", {
+      currentBgColor,
+      currentTextColor,
+      currentQuoteText,
+      currentSignatureText
+    });
+  }, [currentBgColor, currentTextColor, currentQuoteText, currentSignatureText]);
 
   // Local state for UI controls
   const [fileName, setFileName] = useState<string>("");
@@ -51,31 +63,75 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
   const [signatureFont, setSignatureFont] = useState("serif");
   const [quoteAlign, setQuoteAlign] = useState("left");
   const [signatureAlign, setSignatureAlign] = useState("right");
+  const [quoteText, setQuoteText] = useState("");
+  const [signatureText, setSignatureText] = useState("");
 
-  // Sync state with template manager
+  // Sync state with template manager for text
   useEffect(() => {
-    if (currentQuoteFontSize) setQuoteFontSize(currentQuoteFontSize);
+    if (currentQuoteText) {
+      setQuoteText(currentQuoteText);
+      props.onQuoteChange(currentQuoteText);
+    }
+  }, [currentQuoteText]);
+
+  useEffect(() => {
+    if (currentSignatureText) {
+      setSignatureText(currentSignatureText);
+      props.onSignatureChange(currentSignatureText);
+    }
+  }, [currentSignatureText]);
+
+  // Sync state with template manager for font sizes
+  useEffect(() => {
+    if (currentQuoteFontSize) {
+      setQuoteFontSize(currentQuoteFontSize);
+    }
   }, [currentQuoteFontSize]);
 
   useEffect(() => {
-    if (currentSignatureFontSize) setSignatureFontSize(currentSignatureFontSize);
+    if (currentSignatureFontSize) {
+      setSignatureFontSize(currentSignatureFontSize);
+    }
   }, [currentSignatureFontSize]);
 
+  // Sync state with template manager for fonts
   useEffect(() => {
-    if (currentQuoteFont) setQuoteFont(currentQuoteFont);
+    if (currentQuoteFont) {
+      setQuoteFont(currentQuoteFont);
+    }
   }, [currentQuoteFont]);
 
   useEffect(() => {
-    if (currentSignatureFont) setSignatureFont(currentSignatureFont);
+    if (currentSignatureFont) {
+      setSignatureFont(currentSignatureFont);
+    }
   }, [currentSignatureFont]);
 
+  // Sync state with template manager for alignment
   useEffect(() => {
-    if (currentQuoteAlign) setQuoteAlign(currentQuoteAlign);
+    if (currentQuoteAlign) {
+      setQuoteAlign(currentQuoteAlign);
+    }
   }, [currentQuoteAlign]);
 
   useEffect(() => {
-    if (currentSignatureAlign) setSignatureAlign(currentSignatureAlign);
+    if (currentSignatureAlign) {
+      setSignatureAlign(currentSignatureAlign);
+    }
   }, [currentSignatureAlign]);
+
+  // Sync props with local state for quote and signature
+  useEffect(() => {
+    if (props.quote && props.quote !== quoteText) {
+      setQuoteText(props.quote);
+    }
+  }, [props.quote]);
+
+  useEffect(() => {
+    if (props.signature && props.signature !== signatureText) {
+      setSignatureText(props.signature);
+    }
+  }, [props.signature]);
 
   // File upload handler
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,11 +176,9 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
     <div className="sidebar right-sidebar">
       {/* Background Section */}
       <section className="section-container">
-        <h3>Imagen y fondo</h3>
-
         <div className="file-input-wrapper">
           <label className="file-input-label">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="inline-block mr-1" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             Subir imagen
@@ -141,14 +195,12 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
         <div className="control-row color-controls">
           <ColorPicker 
             color={currentBgColor || props.bgColor} 
-            onChange={props.onBgColorChange} 
-            label="Fondo" 
+            onChange={props.onBgColorChange}
           />
 
           <ColorPicker 
             color={currentTextColor || props.textColor} 
-            onChange={props.onTextColorChange} 
-            label="Texto" 
+            onChange={props.onTextColorChange}
           />
         </div>
 
@@ -163,7 +215,7 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
               className="btn btn-primary"
               style={{ width: '100%' }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="inline-block mr-1" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               Usar como fondo
@@ -196,8 +248,11 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
       <section className="section-container">
         <h3>Cita</h3>
         <textarea
-          value={props.quote}
-          onChange={(e) => props.onQuoteChange(e.target.value)}
+          value={quoteText || props.quote}
+          onChange={(e) => {
+            setQuoteText(e.target.value);
+            props.onQuoteChange(e.target.value);
+          }}
           rows={3}
           placeholder="Escribe tu cita aquí..."
         />
@@ -264,8 +319,11 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
       <section className="section-container">
         <h3>Firma</h3>
         <textarea
-          value={props.signature}
-          onChange={(e) => props.onSignatureChange(e.target.value)}
+          value={signatureText || props.signature}
+          onChange={(e) => {
+            setSignatureText(e.target.value);
+            props.onSignatureChange(e.target.value);
+          }}
           rows={2}
           placeholder="Autor de la cita..."
         />
@@ -343,12 +401,10 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
             <ColorPicker 
               color={props.strokeColor} 
               onChange={props.handleStrokeColorChange}
-              label="Color de trazo"
             />
           </div>
 
           <div className="stroke-width-control control-item">
-            <label>Grosor</label>
             <input
               type="number"
               min={1}
@@ -364,4 +420,4 @@ const UpdatedRightSidebar: React.FC<RightSidebarProps> = (props) => {
   );
 };
 
-export default UpdatedRightSidebar;
+export default RightSidebar;

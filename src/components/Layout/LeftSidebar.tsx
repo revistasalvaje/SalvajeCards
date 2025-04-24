@@ -120,13 +120,10 @@ const LeftSidebar: React.FC = () => {
             </svg>
           </div>
         ) : plantillas.length === 0 ? (
-          <div className="text-center py-6 text-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
-            <p>No hay plantillas guardadas</p>
-            <p className="text-xs mt-1">Diseña y guarda tu primera plantilla</p>
-          </div>
+        <div className="text-center py-6 text-secondary">
+          <p>No hay plantillas guardadas</p>
+          <p className="text-xs mt-1">Diseña y guarda tu primera plantilla</p>
+        </div>
         ) : (
           <div className="templates-grid">
             {plantillas.map((p) => (

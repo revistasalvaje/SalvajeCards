@@ -1,4 +1,3 @@
-// src/hooks/useTemplateManager.ts
 import { useState, useEffect, useContext } from 'react';
 import { EditorContext } from '../App';
 import {
@@ -9,7 +8,6 @@ import {
 } from '../utils/templateManager';
 import { fabric } from 'fabric';
 
-// Tipos de notificación para feedback visual
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
 interface Notification {
@@ -34,13 +32,14 @@ export function useTemplateManager() {
   const [currentSignatureFont, setCurrentSignatureFont] = useState("serif");
   const [currentQuoteAlign, setCurrentQuoteAlign] = useState("left");
   const [currentSignatureAlign, setCurrentSignatureAlign] = useState("right");
+  const [currentQuoteText, setCurrentQuoteText] = useState("");
+  const [currentSignatureText, setCurrentSignatureText] = useState("");
 
   // Cargar plantillas al inicio
   useEffect(() => {
     loadPlantillas();
   }, []);
 
-  // Cargar todas las plantillas
   const loadPlantillas = async () => {
     setLoading(true);
     try {
@@ -57,7 +56,6 @@ export function useTemplateManager() {
     }
   };
 
-  // Guardar una nueva plantilla
   const guardarPlantilla = async (nombre: string) => {
     if (!canvasInstance.current) {
       showNotification('El editor no está listo', 'error');
@@ -72,7 +70,7 @@ export function useTemplateManager() {
     setSaving(true);
     try {
       await guardarPlantillaIndexedDB(canvasInstance.current, nombre);
-      await loadPlantillas(); // Recargar plantillas
+      await loadPlantillas();
       showNotification(`Plantilla "${nombre}" guardada`, 'success');
       return true;
     } catch (error) {
@@ -84,7 +82,6 @@ export function useTemplateManager() {
     }
   };
 
-  // Cargar una plantilla existente con sincronización de controles UI
   const cargarPlantilla = async (id: string) => {
     try {
       if (!canvasInstance.current) {
@@ -92,7 +89,6 @@ export function useTemplateManager() {
         return;
       }
 
-      // Añadir debugger
       console.log("🚀 Iniciando carga de plantilla con ID:", id);
 
       const plantilla = await cargarPlantillaIndexedDB(id);
@@ -102,13 +98,47 @@ export function useTemplateManager() {
       }
 
       console.log("📄 Datos de la plantilla cargada:", JSON.stringify(plantilla, null, 2));
-      console.log("👉 Quote:", plantilla.quote);
-      console.log("👉 Signature:", plantilla.signature);
+
+      // IMMEDIATELY update all state variables
+      const textColor = plantilla.quote?.fill || plantilla.signature?.fill || "#000000";
+      const bgColor = plantilla.bgType === "color" ? plantilla.bgValue : "#ffffff";
+
+      // Force state updates with immediate execution and also with timeouts
+      setCurrentTextColor(textColor);
+      setCurrentBgColor(bgColor);
+      setCurrentQuoteFontSize(plantilla.quote?.fontSize || 48);
+      setCurrentSignatureFontSize(plantilla.signature?.fontSize || 32);
+      setCurrentQuoteFont(plantilla.quote?.fontFamily || "serif");
+      setCurrentSignatureFont(plantilla.signature?.fontFamily || "serif");
+      setCurrentQuoteAlign(plantilla.quote?.textAlign || "left");
+      setCurrentSignatureAlign(plantilla.signature?.textAlign || "right");
+      setCurrentQuoteText(plantilla.quote?.text || "");
+      setCurrentSignatureText(plantilla.signature?.text || "");
+
+      console.log("🎨 Estados actualizados:", {
+        textColor,
+        bgColor,
+        quoteFontSize: plantilla.quote?.fontSize || 48,
+        signatureFontSize: plantilla.signature?.fontSize || 32,
+        quoteText: plantilla.quote?.text || "",
+        signatureText: plantilla.signature?.text || ""
+      });
+
+      // Force React to re-render with double update pattern
+      setTimeout(() => {
+        setCurrentTextColor(prev => {
+          console.log("⏰ Forzando actualización de color de texto:", textColor);
+          return textColor;
+        });
+        setCurrentBgColor(prev => {
+          console.log("⏰ Forzando actualización de color de fondo:", bgColor);
+          return bgColor;
+        });
+      }, 50);
 
       const canvas = canvasInstance.current;
 
-      // Importante: Resetear estados antes de cargar nueva plantilla
-      // para evitar problemas con cargas consecutivas
+      // Resetear estados antes de cargar nueva plantilla
       resetStates();
 
       // Mantener los campos de texto pero eliminar otros objetos
@@ -124,140 +154,80 @@ export function useTemplateManager() {
         canvas.setBackgroundImage(null, () => {
           canvas.setBackgroundColor(plantilla.bgValue, () => canvas.renderAll());
         });
-        // IMPORTANTE: Actualizar el estado global del color de fondo
-        setCurrentBgColor(plantilla.bgValue);
-        // También actualizar la propiedad directamente
-        window.setTimeout(() => {
-          // Actualizar con timeout para asegurar que el estado se propague
-          setCurrentBgColor(plantilla.bgValue);
-        }, 50);
         console.log("🎨 Fondo establecido a color:", plantilla.bgValue);
       } else if (plantilla.bgType === "image" && plantilla.bgValue) {
         fabric.Image.fromURL(plantilla.bgValue, (img) => {
-          // Ajustar la imagen de fondo al tamaño del canvas
-          img.scaleToWidth(canvas.getWidth() * 2); // Multiplicamos por 2 para compensar la escala de 0.5
+          img.scaleToWidth(canvas.getWidth() * 2);
           canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
           console.log("🖼️ Fondo establecido a imagen");
         });
       }
 
-      // Extraer el color de texto para ambos elementos
-      let textColor = "#000000"; // Valor predeterminado
-
       // Actualizar el texto de cita y sus controles
       if (plantilla.quote && quoteTextRef?.current) {
-        // Determinar posición original y otras propiedades
         const quoteObj = plantilla.quote;
-        textColor = quoteObj.fill || "#000000";
 
-        console.log("📏 Quote - Posición original:", { left: quoteObj.left, top: quoteObj.top, width: quoteObj.width });
-        console.log("📏 Quote - Posición escalada:", { left: quoteObj.left * 0.5, top: quoteObj.top * 0.5, width: quoteObj.width ? quoteObj.width * 0.5 : null });
-        console.log("🔤 Quote - Propiedades:", { 
-          fontSize: quoteObj.fontSize, 
-          fontFamily: quoteObj.fontFamily, 
-          textAlign: quoteObj.textAlign, 
-          color: textColor 
-        });
-
-        // Actualizar el objeto de texto
         quoteTextRef.current.set({
           text: quoteObj.text || "",
-          left: quoteObj.left * 0.5, // Aplicar escala
-          top: quoteObj.top * 0.5, // Aplicar escala
-          fontSize: quoteObj.fontSize * 0.5, // Aplicar escala
+          left: quoteObj.left * 0.5,
+          top: quoteObj.top * 0.5,
+          fontSize: quoteObj.fontSize * 0.5,
           fontFamily: quoteObj.fontFamily,
           textAlign: quoteObj.textAlign,
           fill: textColor,
-          width: quoteObj.width ? quoteObj.width * 0.5 : canvas.getWidth() - 200, // Añadido ancho con escala
+          width: quoteObj.width ? quoteObj.width * 0.5 : canvas.getWidth() - 200,
           styles: quoteObj.styles || {}
         });
-
-        // Actualizar estados para controles UI - estos valores no se escalan
-        setCurrentQuoteFontSize(quoteObj.fontSize);
-        setCurrentQuoteFont(quoteObj.fontFamily);
-        setCurrentQuoteAlign(quoteObj.textAlign);
 
         console.log("✅ Quote actualizado con propiedades:", quoteTextRef.current);
       }
 
       // Actualizar el texto de firma y sus controles
       if (plantilla.signature && signatureTextRef?.current) {
-        // Determinar posición original
         const signatureObj = plantilla.signature;
-        // Usar el color de texto de la firma, o el de la cita si no tiene uno específico
         const signatureColor = signatureObj.fill || textColor;
 
-        console.log("📏 Signature - Posición original:", { left: signatureObj.left, top: signatureObj.top, width: signatureObj.width });
-        console.log("📏 Signature - Posición escalada:", { left: signatureObj.left * 0.5, top: signatureObj.top * 0.5, width: signatureObj.width ? signatureObj.width * 0.5 : null });
-        console.log("🔤 Signature - Propiedades:", { 
-          fontSize: signatureObj.fontSize, 
-          fontFamily: signatureObj.fontFamily, 
-          textAlign: signatureObj.textAlign, 
-          color: signatureColor 
-        });
-
-        // Actualizar el objeto de texto
         signatureTextRef.current.set({
           text: signatureObj.text || "",
-          left: signatureObj.left * 0.5, // Aplicar escala
-          top: signatureObj.top * 0.5, // Aplicar escala
-          fontSize: signatureObj.fontSize * 0.5, // Aplicar escala
+          left: signatureObj.left * 0.5,
+          top: signatureObj.top * 0.5,
+          fontSize: signatureObj.fontSize * 0.5,
           fontFamily: signatureObj.fontFamily,
           textAlign: signatureObj.textAlign,
           fill: signatureColor,
-          width: signatureObj.width ? signatureObj.width * 0.5 : 200, // Añadido ancho con escala
+          width: signatureObj.width ? signatureObj.width * 0.5 : 200,
           styles: signatureObj.styles || {}
         });
 
-        // Actualizar estados para controles UI - estos valores no se escalan
-        setCurrentSignatureFontSize(signatureObj.fontSize);
-        setCurrentSignatureFont(signatureObj.fontFamily);
-        setCurrentSignatureAlign(signatureObj.textAlign);
-
         console.log("✅ Signature actualizado con propiedades:", signatureTextRef.current);
       }
-
-      // IMPORTANTE: Actualizar el color de texto después de procesar ambos objetos
-      setCurrentTextColor(textColor);
-      console.log("🎨 Color de texto actualizado a:", textColor);
-
-      // Forzar actualización de estados con timeout
-      setTimeout(() => {
-        setCurrentTextColor(textColor);
-        if (plantilla.bgType === "color") {
-          setCurrentBgColor(plantilla.bgValue);
-        }
-      }, 100);
 
       // Añadir formas
       if (plantilla.shapes && plantilla.shapes.length > 0) {
         console.log("🔶 Añadiendo formas:", plantilla.shapes.length);
 
         plantilla.shapes.forEach((shape, index) => {
-          console.log(`Forma ${index + 1}:`, shape);
-
           let obj;
           if (shape.type === "rect") {
             obj = new fabric.Rect({
-              left: shape.left * 0.5, // Aplicar escala de 0.5
-              top: shape.top * 0.5, // Aplicar escala de 0.5
-              width: (shape.width || 120) * 0.5, // Aplicar escala de 0.5
-              height: (shape.height || 80) * 0.5, // Aplicar escala de 0.5
+              left: shape.left * 0.5,
+              top: shape.top * 0.5,
+              width: (shape.width || 120) * 0.5,
+              height: (shape.height || 80) * 0.5,
               stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth * 0.5, // Aplicar escala de 0.5 al grosor del trazo
+              strokeWidth: shape.strokeWidth * 0.5,
               fill: "transparent",
             });
           } else if (shape.type === "circle") {
             obj = new fabric.Circle({
-              left: shape.left * 0.5, // Aplicar escala de 0.5
-              top: shape.top * 0.5, // Aplicar escala de 0.5
-              radius: (shape.radius || 50) * 0.5, // Aplicar escala de 0.5
+              left: shape.left * 0.5,
+              top: shape.top * 0.5,
+              radius: (shape.radius || 50) * 0.5,
               stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth * 0.5, // Aplicar escala de 0.5 al grosor del trazo
+              strokeWidth: shape.strokeWidth * 0.5,
               fill: "transparent",
             });
           } else if (shape.type === "line") {
-            // Para líneas, debemos calcular las coordenadas de inicio y fin
             obj = new fabric.Line(
               [
                 shape.left * 0.5, 
@@ -267,12 +237,10 @@ export function useTemplateManager() {
               ], 
               {
                 stroke: shape.stroke,
-                strokeWidth: shape.strokeWidth * 0.5, // Aplicar escala de 0.5 al grosor del trazo
+                strokeWidth: shape.strokeWidth * 0.5,
               }
             );
           } else if (shape.type === "group") {
-            // Para el caso de flechas (grupos compuestos por línea y triángulo)
-            // Tratar de recrear la flecha con la escala correcta
             const line = new fabric.Line([0, 0, 150 * 0.5, 0], {
               stroke: shape.stroke,
               strokeWidth: shape.strokeWidth * 0.5,
@@ -305,7 +273,6 @@ export function useTemplateManager() {
 
           if (obj) {
             canvas.add(obj);
-            console.log(`✅ Forma ${shape.type} añadida`);
           }
         });
       }
@@ -319,18 +286,14 @@ export function useTemplateManager() {
     }
   };
 
-  // Resetear estados antes de cargar una nueva plantilla
   const resetStates = () => {
     console.log("Reseteando estados para nueva carga");
-    // No reseteamos los colores porque los queremos heredar de la plantilla
   };
 
-  // Sistema de notificaciones
   const showNotification = (message: string, type: NotificationType = 'info') => {
     const id = Date.now();
     setNotifications(prev => [...prev, { message, type, id }]);
 
-    // Auto-eliminar después de 3 segundos
     setTimeout(() => {
       setNotifications(notifications => notifications.filter(n => n.id !== id));
     }, 3000);
@@ -361,6 +324,8 @@ export function useTemplateManager() {
     currentQuoteFont,
     currentSignatureFont,
     currentQuoteAlign,
-    currentSignatureAlign
+    currentSignatureAlign,
+    currentQuoteText,
+    currentSignatureText
   };
 }

@@ -36,7 +36,6 @@ const ShapeControls: React.FC<ShapeControlsProps> = ({
         </div>
 
         <div className="stroke-width-control control-item">
-          <label>Grosor</label>
           <input
             type="number"
             min={1}
