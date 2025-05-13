@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 interface QuoteControlsProps {
   quote: string;
@@ -17,6 +17,40 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
   onFontChange,
   onAlignChange,
 }) => {
+  // Track active styles
+  const [activeStyles, setActiveStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    linethrough: false
+  });
+
+  // Font size state
+  const [fontSize, setFontSize] = useState(48); // Default font size
+
+  // Toggle style function
+  const toggleStyle = (style: string) => {
+    let styleKey = style;
+    let styleValue: any = true;
+
+    if (style === "bold") {
+      styleKey = "fontWeight";
+      styleValue = "bold";
+    } else if (style === "italic") {
+      styleKey = "fontStyle";
+      styleValue = "italic";
+    }
+
+    // Toggle the style state
+    setActiveStyles(prev => ({
+      ...prev,
+      [style]: !prev[style as keyof typeof prev]
+    }));
+
+    // Apply the style to the canvas
+    onToggleStyle(styleKey, styleValue);
+  };
+
   return (
     <div className="mb-6 w-full max-w-full">
       <h3 className="text-sm font-semibold mb-2">Cita</h3>
@@ -32,29 +66,15 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
               />
             </div>
           </div>
-
         </div>
       </div>
 
       <div className="flex items-center gap-1 flex-nowrap overflow-hidden text-xs">
-        {["bold", "italic", "underline", "linethrough"].map((style, i) => (
+        {["bold", "italic", "underline", "linethrough"].map((style) => (
           <button
             key={style}
-            className="w-7 h-7 border rounded shrink-0"
-            onClick={() =>
-              onToggleStyle(
-                style === "bold"
-                  ? "fontWeight"
-                  : style === "italic"
-                  ? "fontStyle"
-                  : style,
-                style === "bold"
-                  ? "bold"
-                  : style === "italic"
-                  ? "italic"
-                  : true
-              )
-            }
+            className={`w-7 h-7 border rounded shrink-0 ${activeStyles[style as keyof typeof activeStyles] ? 'bg-primary text-white' : ''}`}
+            onClick={() => toggleStyle(style)}
           >
             {style[0].toUpperCase()}
           </button>
@@ -64,8 +84,13 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
           type="number"
           min={8}
           max={100}
+          value={fontSize}
           className="w-10 px-1 py-0.5 border rounded text-center shrink-0"
-          onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
+          onChange={(e) => {
+            const size = parseInt(e.target.value);
+            setFontSize(size);
+            onFontSizeChange(size);
+          }}
         />
 
         <select

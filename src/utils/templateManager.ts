@@ -57,9 +57,45 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
     console.log("Objetos en el canvas:", objects);
 
     // Procesar objetos de texto
-    const quote = objects.find((o) => o.type === "textbox" || o.type === "i-text" && (o as any).name !== "signature") as fabric.Textbox;
+    const quote = objects.find((o) => (o.type === "textbox" || o.type === "i-text") && (o as any).name !== "signature") as fabric.Textbox;
     const signature = objects.find((o) => (o.type === "textbox" || o.type === "i-text") && (o as any).name === "signature") as fabric.Textbox;
-    const shapes = objects.filter((o) => o.type !== "textbox" && o.type !== "i-text");
+
+    // Process shapes with better type handling
+    const shapes = objects.filter((o) => o.type !== "textbox" && o.type !== "i-text").map(shape => {
+      // Base shape properties
+      const baseProps = {
+        type: shape.type,
+        left: shape.left,
+        top: shape.top,
+        width: (shape as any).width,
+        height: (shape as any).height,
+        radius: (shape as any).radius,
+        stroke: (shape as any).stroke,
+        strokeWidth: (shape as any).strokeWidth,
+      };
+
+      // Special handling for group objects (arrows)
+      if (shape.type === 'group') {
+        // Save additional information about group contents
+        return {
+          ...baseProps,
+          isArrow: true,
+          objects: (shape as fabric.Group).getObjects().map(obj => ({
+            type: obj.type,
+            left: obj.left,
+            top: obj.top,
+            width: (obj as any).width,
+            height: (obj as any).height,
+            angle: obj.angle,
+            fill: (obj as any).fill,
+            stroke: (obj as any).stroke,
+            strokeWidth: (obj as any).strokeWidth
+          }))
+        };
+      }
+
+      return baseProps;
+    });
 
     // Determinar tipo y valor de fondo
     let bgType = "color";
@@ -92,41 +128,46 @@ export async function guardarPlantillaIndexedDB(canvas: fabric.Canvas, nombre: s
       thumbnail = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
     }
 
+    // Save text properties more comprehensively
+    const quoteData = quote ? {
+      text: quote.text,
+      left: quote.left,
+      top: quote.top,
+      width: quote.width,
+      height: quote.height,
+      fontSize: quote.fontSize,
+      fontFamily: quote.fontFamily,
+      textAlign: quote.textAlign,
+      originX: quote.originX,
+      originY: quote.originY,
+      fill: quote.fill,
+      styles: quote.styles || {},
+    } : null;
+
+    const signatureData = signature ? {
+      text: signature.text,
+      left: signature.left,
+      top: signature.top,
+      width: signature.width,
+      height: signature.height,
+      fontSize: signature.fontSize,
+      fontFamily: signature.fontFamily,
+      textAlign: signature.textAlign,
+      originX: signature.originX,
+      originY: signature.originY,
+      fill: signature.fill,
+      styles: signature.styles || {},
+    } : null;
+
     const plantilla: Plantilla = {
       id: Date.now().toString(),
       name: nombre,
       thumbnail: thumbnail,
       bgType: bgType,
       bgValue: bgValue,
-      quote: quote
-        ? {
-            text: quote.text,
-            left: quote.left,
-            top: quote.top,
-            fontSize: quote.fontSize,
-            fontFamily: quote.fontFamily,
-            textAlign: quote.textAlign,
-            styles: quote.styles || {},
-          }
-        : null,
-      signature: signature
-        ? {
-            text: signature.text,
-            left: signature.left,
-            top: signature.top,
-            fontSize: signature.fontSize,
-            fontFamily: signature.fontFamily,
-            textAlign: signature.textAlign,
-            styles: signature.styles || {},
-          }
-        : null,
-      shapes: shapes.map((s) => ({
-        type: s.type,
-        left: s.left,
-        top: s.top,
-        stroke: (s as any).stroke,
-        strokeWidth: (s as any).strokeWidth,
-      })),
+      quote: quoteData,
+      signature: signatureData,
+      shapes: shapes
     };
 
     console.log("Plantilla preparada para guardar:", plantilla);

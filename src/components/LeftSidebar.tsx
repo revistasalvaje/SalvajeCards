@@ -61,6 +61,42 @@ const LeftSidebar: React.FC = () => {
     }
   };
 
+  const createArrow = (canvas: fabric.Canvas, shapeData: any) => {
+    const commonProps = {
+      stroke: shapeData.stroke || "#000000",
+      strokeWidth: shapeData.strokeWidth || 2,
+      left: shapeData.left || 100,
+      top: shapeData.top || 100,
+      fill: "transparent",
+    };
+
+    // Create arrow components
+    const line = new fabric.Line([0, 0, 150, 0], {
+      ...commonProps,
+      left: 0,
+      top: -commonProps.strokeWidth/2,
+    });
+
+    const triangle = new fabric.Triangle({
+      left: 150,
+      top: 0,
+      width: 12,
+      height: 12,
+      angle: 90,
+      originX: "center",
+      originY: "center",
+      fill: commonProps.stroke,
+      stroke: commonProps.stroke,
+      strokeWidth: commonProps.strokeWidth,
+      selectable: false,
+    });
+
+    // Group them together
+    const arrow = new fabric.Group([line, triangle], commonProps);
+
+    return arrow;
+  };
+
   const handleCargar = async (id: string) => {
     try {
       if (!canvasInstance.current) {
@@ -77,6 +113,7 @@ const LeftSidebar: React.FC = () => {
       const canvas = canvasInstance.current;
       canvas.clear();
 
+      // Set background
       if (plantilla.bgType === "color") {
         canvas.setBackgroundColor(plantilla.bgValue, () => canvas.renderAll());
       } else if (plantilla.bgType === "image" && plantilla.bgValue) {
@@ -85,59 +122,83 @@ const LeftSidebar: React.FC = () => {
         });
       }
 
+      // Add quote with proper properties
       if (plantilla.quote) {
-        const q = new fabric.Textbox(plantilla.quote.text, {
+        const q = new fabric.Textbox(plantilla.quote.text || "", {
           left: plantilla.quote.left,
           top: plantilla.quote.top,
+          width: plantilla.quote.width,
           fontSize: plantilla.quote.fontSize,
           fontFamily: plantilla.quote.fontFamily,
           textAlign: plantilla.quote.textAlign,
+          originX: plantilla.quote.originX || "left",
+          originY: plantilla.quote.originY || "top",
+          fill: plantilla.quote.fill || "#000000",
           name: "quote",
         });
         canvas.add(q);
       }
 
+      // Add signature with proper properties
       if (plantilla.signature) {
-        const s = new fabric.Textbox(plantilla.signature.text, {
+        const s = new fabric.Textbox(plantilla.signature.text || "", {
           left: plantilla.signature.left,
           top: plantilla.signature.top,
+          width: plantilla.signature.width,
           fontSize: plantilla.signature.fontSize,
           fontFamily: plantilla.signature.fontFamily,
           textAlign: plantilla.signature.textAlign,
+          originX: plantilla.signature.originX || "right",
+          originY: plantilla.signature.originY || "bottom",
+          fill: plantilla.signature.fill || "#000000",
           name: "signature",
         });
         canvas.add(s);
       }
 
+      // Add shapes with proper handling for each type
       if (plantilla.shapes && plantilla.shapes.length > 0) {
         plantilla.shapes.forEach((shape) => {
           let obj;
-          if (shape.type === "rect") {
+
+          if (shape.isArrow || (shape.type === "group" && shape.objects)) {
+            // Recreate arrow
+            obj = createArrow(canvas, shape);
+          } 
+          else if (shape.type === "rect") {
             obj = new fabric.Rect({
               left: shape.left,
               top: shape.top,
-              width: 120,
-              height: 80,
+              width: shape.width || 120,
+              height: shape.height || 80,
               stroke: shape.stroke,
               strokeWidth: shape.strokeWidth,
               fill: "transparent",
             });
-          } else if (shape.type === "circle") {
+          } 
+          else if (shape.type === "circle") {
             obj = new fabric.Circle({
               left: shape.left,
               top: shape.top,
-              radius: 50,
+              radius: shape.radius || 50,
               stroke: shape.stroke,
               strokeWidth: shape.strokeWidth,
               fill: "transparent",
             });
-          } else if (shape.type === "line") {
-            obj = new fabric.Line([shape.left, shape.top, shape.left + 150, shape.top], {
-              stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth,
-            });
+          } 
+          else if (shape.type === "line") {
+            obj = new fabric.Line(
+              [shape.left, shape.top, shape.left + (shape.width || 150), shape.top], 
+              {
+                stroke: shape.stroke,
+                strokeWidth: shape.strokeWidth,
+              }
+            );
           }
-          if (obj) canvas.add(obj);
+
+          if (obj) {
+            canvas.add(obj);
+          }
         });
       }
 
@@ -163,12 +224,13 @@ const LeftSidebar: React.FC = () => {
           placeholder="Nombre plantilla"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="w-full"
+          className="w-full p-2 border rounded mb-2"
         />
         <button
           onClick={handleGuardar}
           disabled={guardando || !nombre.trim() || !isCanvasReady()}
-          className={`w-full btn-primary ${(guardando || !nombre.trim() || !isCanvasReady()) ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full py-2 px-4 bg-blue-600 text-white rounded
+            ${(guardando || !nombre.trim() || !isCanvasReady()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
         >
           {guardando ? (
             <span className="flex items-center justify-center">
@@ -191,7 +253,7 @@ const LeftSidebar: React.FC = () => {
             </svg>
           </div>
         ) : plantillas.length === 0 ? (
-          <div className="text-center py-6 text-secondary">
+          <div className="text-center py-6 text-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>

@@ -17,7 +17,8 @@ export const EditorContext = createContext<{
 }>({ canvasInstance: { current: null } });
 
 function App() {
-  const [canvasFormat, setCanvasFormat] = useState<'square' | 'portrait'>('square');
+  // Changed default format to portrait
+  const [canvasFormat, setCanvasFormat] = useState<'square' | 'portrait'>('portrait');
 
   const {
     canvasRef,
@@ -46,6 +47,21 @@ function App() {
     handleStrokeColorChange,
     handleStrokeWidthChange,
   } = useEditor();
+
+  // Initialize canvas and default text elements
+  useEffect(() => {
+    // Wait until canvas is initialized
+    if (!canvasInstance.current) return;
+
+    // Initialize the quote and signature fields with empty text
+    if (quote === "" && signature === "") {
+      updateText("", "quote");
+      updateText("", "signature");
+    }
+
+    // Set the initial format
+    handleFormatChange(canvasFormat);
+  }, [canvasInstance.current]);
 
   // Cambiar formato del canvas
   const handleFormatChange = (format: 'square' | 'portrait') => {
@@ -143,7 +159,6 @@ function App() {
     if (!canvas) return;
 
     const name = type === "signature" ? "signature" : undefined;
-    const text = type === "signature" ? signature : quote;
     const setText = type === "signature" ? setSignature : setQuote;
     const isSignature = type === "signature";
 
@@ -170,7 +185,7 @@ function App() {
         fill: textColor,
         fontFamily: "serif",
         editable: true,
-        name,
+        name: isSignature ? "signature" : "quote",
       });
       canvas.add(newText).setActiveObject(newText);
       canvas.renderAll();

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../App";
 
 interface CanvasEditorProps {
@@ -7,13 +7,22 @@ interface CanvasEditorProps {
 
 const CanvasEditor: React.FC<CanvasEditorProps> = ({ canvasRef }) => {
   const { canvasInstance } = useContext(EditorContext);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Add effect to track canvas initialization
+  useEffect(() => {
+    if (canvasInstance.current) {
+      // When canvas is initialized, hide loading indicator
+      setIsInitializing(false);
+    }
+  }, [canvasInstance.current]);
 
   return (
     <div className="canvas-container">
       <div className="relative">
         <canvas ref={canvasRef} id="canvas" />
 
-        {!canvasInstance.current && (
+        {isInitializing && (
           <div className="absolute inset-0 flex items-center justify-center bg-panel bg-opacity-70">
             <div className="text-center p-6">
               <svg className="animate-spin mx-auto h-10 w-10 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
