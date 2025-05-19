@@ -27,6 +27,7 @@ interface RightSidebarProps {
   onQuoteChange: (text: string) => void;
   onSignatureChange: (text: string) => void;
   onToggleStyle: (style: string, value: any) => void;
+  onToggleSignatureStyle: (style: string, value: any) => void;
   onFontSizeChange: (size: number) => void;
   onFontSizeSignatureChange: (size: number) => void;
   onFontChange: (font: string) => void;
@@ -59,6 +60,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   onQuoteChange,
   onSignatureChange,
   onToggleStyle,
+  onToggleSignatureStyle,
   onFontSizeChange,
   onFontSizeSignatureChange,
   onFontChange,
@@ -113,7 +115,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             <SignatureControls
               signature={signature}
               onChange={onSignatureChange}
-              onToggleStyle={onToggleStyle}
+              onToggleStyle={onToggleSignatureStyle}
               onFontSizeChange={onFontSizeSignatureChange}
               onFontChange={onFontSignatureChange}
               onAlignChange={onAlignSignatureChange}

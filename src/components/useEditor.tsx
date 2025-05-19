@@ -15,6 +15,14 @@ export function useEditor() {
   const [showTextPicker, setShowTextPicker] = useState(false);
   const [paletteClickCount, setPaletteClickCount] = useState(0);
 
+  // Text styling
+  const [quoteFontSize, setQuoteFontSize] = useState(48);
+  const [signatureFontSize, setSignatureFontSize] = useState(32);
+  const [quoteFont, setQuoteFont] = useState("serif");
+  const [signatureFont, setSignatureFont] = useState("serif");
+  const [quoteAlign, setQuoteAlign] = useState("center");
+  const [signatureAlign, setSignatureAlign] = useState("center");
+
   const [strokeColor, setStrokeColor] = useState("#000000");
   const [strokeWidth, setStrokeWidth] = useState(2);
 
@@ -31,23 +39,27 @@ export function useEditor() {
     const canvas = new fabric.Canvas(canvasEl, {
       backgroundColor: "white",
       width: 1080,
-      height: 1080, // Inicialmente cuadrado 1:1
-      selection: false,
+      height: 1350, // Inicialmente formato retrato
+      selection: true,
     });
 
     const scale = 0.5;
     canvas.setZoom(scale);
     canvas.setWidth(1080 * scale);
-    canvas.setHeight(1080 * scale);
+    canvas.setHeight(1350 * scale);
 
     canvasInstance.current = canvas;
     console.log("Canvas inicializado correctamente:", canvasInstance.current);
+
+    // Inicializar campos de texto
+    initializeTextFields(canvas);
 
     // Borrar objeto seleccionado con Supr
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" || e.key === "Backspace") {
         const active = canvas.getActiveObject();
-        if (active) {
+        if (active && active.type !== "textbox") {
+          // Solo permitir borrar elementos que no sean los campos de texto principales
           canvas.remove(active);
           canvas.requestRenderAll();
         }
@@ -62,6 +74,82 @@ export function useEditor() {
       canvasInstance.current = null;
     };
   }, []);
+
+  // Inicializar los campos de texto en el canvas
+  const initializeTextFields = (canvas: fabric.Canvas) => {
+    // Crear campo para la cita
+    const quoteText = new fabric.Textbox("", {
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 3,
+      originX: "center",
+      originY: "center",
+      fontSize: quoteFontSize,
+      fontFamily: quoteFont,
+      fill: textColor,
+      textAlign: quoteAlign,
+      width: canvas.getWidth() * 0.8,
+      name: "quote",
+      editable: true,
+      lockUniScaling: true,
+      centeredRotation: true,
+    });
+
+    // Crear campo para la firma
+    const signatureText = new fabric.Textbox("", {
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() * 0.85,
+      originX: "center",
+      originY: "center",
+      fontSize: signatureFontSize,
+      fontFamily: signatureFont,
+      fill: textColor,
+      textAlign: signatureAlign,
+      width: canvas.getWidth() * 0.6,
+      name: "signature",
+      editable: true,
+      lockUniScaling: true,
+      centeredRotation: true,
+    });
+
+    canvas.add(quoteText);
+    canvas.add(signatureText);
+    canvas.renderAll();
+  };
+
+  // Actualizar texto en el canvas
+  const updateTextField = (type: "quote" | "signature", text: string) => {
+    const canvas = canvasInstance.current;
+    if (!canvas) return;
+
+    // Encontrar el campo de texto correspondiente
+    const textObject = canvas.getObjects().find(
+      (obj) => obj.name === type
+    ) as fabric.Textbox;
+
+    if (textObject) {
+      textObject.set({ text });
+      canvas.renderAll();
+    } else {
+      // Si no existe el campo, recrearlo
+      initializeTextFields(canvas);
+    }
+  };
+
+  // Actualizar estilo de texto
+  const updateTextStyle = (type: "quote" | "signature", style: object) => {
+    const canvas = canvasInstance.current;
+    if (!canvas) return;
+
+    // Encontrar el campo de texto correspondiente
+    const textObject = canvas.getObjects().find(
+      (obj) => obj.name === type
+    ) as fabric.Textbox;
+
+    if (textObject) {
+      textObject.set(style);
+      canvas.renderAll();
+    }
+  };
 
   // Añadir forma al canvas
   const addShape = (type: "line" | "arrow" | "rect" | "circle") => {
@@ -221,5 +309,20 @@ export function useEditor() {
     addShape,
     handleStrokeColorChange,
     handleStrokeWidthChange,
+    updateTextField,
+    updateTextStyle,
+    // Expose font properties
+    quoteFontSize,
+    setQuoteFontSize,
+    signatureFontSize,
+    setSignatureFontSize,
+    quoteFont,
+    setQuoteFont,
+    signatureFont,
+    setSignatureFont,
+    quoteAlign,
+    setQuoteAlign,
+    signatureAlign,
+    setSignatureAlign,
   };
 }

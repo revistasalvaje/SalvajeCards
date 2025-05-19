@@ -17,7 +17,7 @@ export const EditorContext = createContext<{
 }>({ canvasInstance: { current: null } });
 
 function App() {
-  // Changed default format to portrait
+  // Set default format to portrait
   const [canvasFormat, setCanvasFormat] = useState<'square' | 'portrait'>('portrait');
 
   const {
@@ -46,22 +46,21 @@ function App() {
     addShape,
     handleStrokeColorChange,
     handleStrokeWidthChange,
+    updateTextField,
+    updateTextStyle,
+    quoteFontSize,
+    setQuoteFontSize,
+    signatureFontSize,
+    setSignatureFontSize,
+    quoteFont,
+    setQuoteFont,
+    signatureFont,
+    setSignatureFont,
+    quoteAlign,
+    setQuoteAlign,
+    signatureAlign,
+    setSignatureAlign
   } = useEditor();
-
-  // Initialize canvas and default text elements
-  useEffect(() => {
-    // Wait until canvas is initialized
-    if (!canvasInstance.current) return;
-
-    // Initialize the quote and signature fields with empty text
-    if (quote === "" && signature === "") {
-      updateText("", "quote");
-      updateText("", "signature");
-    }
-
-    // Set the initial format
-    handleFormatChange(canvasFormat);
-  }, [canvasInstance.current]);
 
   // Cambiar formato del canvas
   const handleFormatChange = (format: 'square' | 'portrait') => {
@@ -84,7 +83,31 @@ function App() {
       canvas.setDimensions({ width: 1080 * scale, height: 1350 * scale });
     }
 
+    // Update text field positions
+    repositionTextFields(canvas);
     canvas.renderAll();
+  };
+
+  // Reposition text fields after canvas resize
+  const repositionTextFields = (canvas: fabric.Canvas) => {
+    const quoteObj = canvas.getObjects().find(obj => obj.name === 'quote') as fabric.Textbox;
+    const signatureObj = canvas.getObjects().find(obj => obj.name === 'signature') as fabric.Textbox;
+
+    if (quoteObj) {
+      quoteObj.set({
+        left: canvas.getWidth() / 2,
+        top: canvas.getHeight() / 3,
+        width: canvas.getWidth() * 0.8
+      });
+    }
+
+    if (signatureObj) {
+      signatureObj.set({
+        left: canvas.getWidth() / 2,
+        top: canvas.getHeight() * 0.85,
+        width: canvas.getWidth() * 0.6
+      });
+    }
   };
 
   const updateCanvasBackgroundColor = (color: string) => {
@@ -102,8 +125,8 @@ function App() {
     const canvas = canvasInstance.current;
     if (!canvas) return;
     canvas.getObjects().forEach((obj) => {
-      if (obj.type === "i-text") {
-        (obj as fabric.IText).set({ fill: color });
+      if (obj.type === "textbox") {
+        (obj as fabric.Textbox).set({ fill: color });
       }
     });
     canvas.renderAll();
@@ -154,78 +177,54 @@ function App() {
     setPaletteClickCount((count) => count + 1);
   };
 
-  const updateText = (content: string, type: "quote" | "signature") => {
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
-
-    const name = type === "signature" ? "signature" : undefined;
-    const setText = type === "signature" ? setSignature : setQuote;
-    const isSignature = type === "signature";
-
-    setText(content);
-
-    let obj = canvas
-      .getObjects()
-      .find(
-        (o) =>
-          o.type === "i-text" &&
-          (isSignature ? o.name === "signature" : o.name !== "signature"),
-      ) as fabric.IText;
-
-    if (obj) {
-      obj.text = content;
-      canvas.renderAll();
-    } else {
-      const newText = new fabric.IText(content, {
-        left: isSignature ? canvas.getWidth() - 60 : 100,
-        top: isSignature ? canvas.getHeight() - 60 : 100,
-        originX: isSignature ? "right" : "left",
-        originY: isSignature ? "bottom" : "top",
-        fontSize: isSignature ? 32 : 48,
-        fill: textColor,
-        fontFamily: "serif",
-        editable: true,
-        name: isSignature ? "signature" : "quote",
-      });
-      canvas.add(newText).setActiveObject(newText);
-      canvas.renderAll();
-    }
+  // Handler for quote text changes
+  const handleQuoteChange = (text: string) => {
+    setQuote(text);
+    updateTextField("quote", text);
   };
 
-  const applyGlobalStyle = (type: "quote" | "signature", style: object) => {
-    const canvas = canvasInstance.current;
-    if (!canvas) return;
-    const target = canvas
-      .getObjects()
-      .find(
-        (o) =>
-          o.type === "i-text" &&
-          (type === "quote" ? o.name !== "signature" : o.name === "signature"),
-      ) as fabric.IText;
-    if (target) {
-      target.set(style);
-      canvas.renderAll();
-    }
+  // Handler for signature text changes
+  const handleSignatureChange = (text: string) => {
+    setSignature(text);
+    updateTextField("signature", text);
   };
 
-  const toggleTextStyle = (style: string, value: any) => {
-    const canvas = canvasInstance.current;
-    const active = canvas?.getActiveObject();
-    if (!canvas || !active || active.type !== "i-text") return;
-    const itext = active as fabric.IText;
-    const start = itext.selectionStart || 0;
-    const end = itext.selectionEnd || 0;
-    if (start === end) return;
+  // Font size handlers
+  const handleQuoteFontSizeChange = (size: number) => {
+    setQuoteFontSize(size);
+    updateTextStyle("quote", { fontSize: size });
+  };
 
-    for (let i = start; i < end; i++) {
-      const current = itext.getSelectionStyles(i)[0] || {};
-      const applied = current?.[style] === value;
-      const newStyle = { ...current };
-      if (applied) delete newStyle[style];
-      else newStyle[style] = value;
-      itext.setSelectionStyles(newStyle, i, i + 1);
-    }
-    canvas.renderAll();
+  const handleSignatureFontSizeChange = (size: number) => {
+    setSignatureFontSize(size);
+    updateTextStyle("signature", { fontSize: size });
+  };
+
+  // Font family handlers
+  const handleQuoteFontChange = (font: string) => {
+    setQuoteFont(font);
+    updateTextStyle("quote", { fontFamily: font });
+  };
+
+  const handleSignatureFontChange = (font: string) => {
+    setSignatureFont(font);
+    updateTextStyle("signature", { fontFamily: font });
+  };
+
+  // Text alignment handlers
+  const handleQuoteAlignChange = (align: string) => {
+    setQuoteAlign(align);
+    updateTextStyle("quote", { textAlign: align });
+  };
+
+  const handleSignatureAlignChange = (align: string) => {
+    setSignatureAlign(align);
+    updateTextStyle("signature", { textAlign: align });
+  };
+
+  // Handlers for text style toggles
+  const toggleTextStyle = (field: "quote" | "signature", style: string, value: any) => {
+    updateTextStyle(field, { [style]: value });
   };
 
   return (
@@ -265,27 +264,16 @@ function App() {
                 onTextColorChange={updateCanvasTextColor}
                 toggleBgPicker={() => setShowBgPicker(!showBgPicker)}
                 toggleTextPicker={() => setShowTextPicker(!showTextPicker)}
-                onQuoteChange={(text) => updateText(text, "quote")}
-                onSignatureChange={(text) => updateText(text, "signature")}
-                onToggleStyle={toggleTextStyle}
-                onFontSizeChange={(size) =>
-                  applyGlobalStyle("quote", { fontSize: size })
-                }
-                onFontSizeSignatureChange={(size) =>
-                  applyGlobalStyle("signature", { fontSize: size })
-                }
-                onFontChange={(font) =>
-                  applyGlobalStyle("quote", { fontFamily: font })
-                }
-                onFontSignatureChange={(font) =>
-                  applyGlobalStyle("signature", { fontFamily: font })
-                }
-                onAlignChange={(align) =>
-                  applyGlobalStyle("quote", { textAlign: align })
-                }
-                onAlignSignatureChange={(align) =>
-                  applyGlobalStyle("signature", { textAlign: align })
-                }
+                onQuoteChange={handleQuoteChange}
+                onSignatureChange={handleSignatureChange}
+                onToggleStyle={(style, value) => toggleTextStyle("quote", style, value)}
+                onToggleSignatureStyle={(style, value) => toggleTextStyle("signature", style, value)}
+                onFontSizeChange={handleQuoteFontSizeChange}
+                onFontSizeSignatureChange={handleSignatureFontSizeChange}
+                onFontChange={handleQuoteFontChange}
+                onFontSignatureChange={handleSignatureFontChange}
+                onAlignChange={handleQuoteAlignChange}
+                onAlignSignatureChange={handleSignatureAlignChange}
                 strokeColor={strokeColor}
                 strokeWidth={strokeWidth}
                 addShape={addShape}

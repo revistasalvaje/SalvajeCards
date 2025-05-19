@@ -111,7 +111,37 @@ const LeftSidebar: React.FC = () => {
       }
 
       const canvas = canvasInstance.current;
-      canvas.clear();
+
+      // Find existing text objects before clearing
+      const existingQuote = canvas.getObjects().find(obj => obj.name === 'quote') as fabric.Textbox;
+      const existingSignature = canvas.getObjects().find(obj => obj.name === 'signature') as fabric.Textbox;
+
+      // Save their properties to restore
+      const quoteObj = existingQuote ? {
+        left: existingQuote.left,
+        top: existingQuote.top,
+        width: existingQuote.width,
+        originX: existingQuote.originX,
+        originY: existingQuote.originY
+      } : null;
+
+      const signatureObj = existingSignature ? {
+        left: existingSignature.left,
+        top: existingSignature.top,
+        width: existingSignature.width,
+        originX: existingSignature.originX,
+        originY: existingSignature.originY
+      } : null;
+
+      // Keep references to text objects and remove them temporarily
+      const textObjects = canvas.getObjects().filter(obj => 
+        obj.name === 'quote' || obj.name === 'signature'
+      );
+
+      textObjects.forEach(obj => canvas.remove(obj));
+
+      // Clear other objects from canvas
+      canvas.getObjects().slice().forEach(obj => canvas.remove(obj));
 
       // Set background
       if (plantilla.bgType === "color") {
@@ -124,41 +154,71 @@ const LeftSidebar: React.FC = () => {
 
       // Add quote with proper properties
       if (plantilla.quote) {
-        const q = new fabric.Textbox(plantilla.quote.text || "", {
-          left: plantilla.quote.left,
-          top: plantilla.quote.top,
-          width: plantilla.quote.width,
-          fontSize: plantilla.quote.fontSize,
-          fontFamily: plantilla.quote.fontFamily,
-          textAlign: plantilla.quote.textAlign,
-          originX: plantilla.quote.originX || "left",
-          originY: plantilla.quote.originY || "top",
+        const quoteProps = {
+          left: quoteObj?.left || canvas.getWidth() / 2,
+          top: quoteObj?.top || canvas.getHeight() / 3,
+          width: quoteObj?.width || canvas.getWidth() * 0.8,
+          originX: quoteObj?.originX || "center",
+          originY: quoteObj?.originY || "center",
+          fontSize: plantilla.quote.fontSize || 48,
+          fontFamily: plantilla.quote.fontFamily || "serif",
+          textAlign: plantilla.quote.textAlign || "center",
           fill: plantilla.quote.fill || "#000000",
           name: "quote",
-        });
+          text: plantilla.quote.text || "",
+          selectable: true,
+          editable: true,
+        };
+
+        const q = new fabric.Textbox(plantilla.quote.text || "", quoteProps);
         canvas.add(q);
+
+        // Trigger UI update event - could be custom event for real app
+        window.dispatchEvent(new CustomEvent('quoteUpdated', { 
+          detail: { text: plantilla.quote.text, styles: {
+            fontSize: plantilla.quote.fontSize,
+            fontFamily: plantilla.quote.fontFamily,
+            textAlign: plantilla.quote.textAlign
+          }}
+        }));
       }
 
       // Add signature with proper properties
       if (plantilla.signature) {
-        const s = new fabric.Textbox(plantilla.signature.text || "", {
-          left: plantilla.signature.left,
-          top: plantilla.signature.top,
-          width: plantilla.signature.width,
-          fontSize: plantilla.signature.fontSize,
-          fontFamily: plantilla.signature.fontFamily,
-          textAlign: plantilla.signature.textAlign,
-          originX: plantilla.signature.originX || "right",
-          originY: plantilla.signature.originY || "bottom",
+        const signatureProps = {
+          left: signatureObj?.left || canvas.getWidth() / 2,
+          top: signatureObj?.top || canvas.getHeight() * 0.85,
+          width: signatureObj?.width || canvas.getWidth() * 0.6,
+          originX: signatureObj?.originX || "center",
+          originY: signatureObj?.originY || "center",
+          fontSize: plantilla.signature.fontSize || 32,
+          fontFamily: plantilla.signature.fontFamily || "serif",
+          textAlign: plantilla.signature.textAlign || "center",
           fill: plantilla.signature.fill || "#000000",
           name: "signature",
-        });
+          text: plantilla.signature.text || "",
+          selectable: true,
+          editable: true,
+        };
+
+        const s = new fabric.Textbox(plantilla.signature.text || "", signatureProps);
         canvas.add(s);
+
+        // Trigger UI update event
+        window.dispatchEvent(new CustomEvent('signatureUpdated', { 
+          detail: { text: plantilla.signature.text, styles: {
+            fontSize: plantilla.signature.fontSize,
+            fontFamily: plantilla.signature.fontFamily,
+            textAlign: plantilla.signature.textAlign
+          }}
+        }));
       }
 
       // Add shapes with proper handling for each type
       if (plantilla.shapes && plantilla.shapes.length > 0) {
         plantilla.shapes.forEach((shape) => {
+          if (shape.type === 'textbox') return; // Skip textbox objects
+
           let obj;
 
           if (shape.isArrow || (shape.type === "group" && shape.objects)) {
