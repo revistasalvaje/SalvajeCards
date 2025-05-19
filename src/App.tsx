@@ -1,5 +1,4 @@
 import React, { createContext, useEffect, useState } from "react";
-import "./index.css";
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
 import LeftSidebar from "./components/LeftSidebar";
@@ -253,6 +252,8 @@ function App() {
                 showTextPicker={showTextPicker}
                 quote={quote}
                 signature={signature}
+                quoteFontSize={quoteFontSize}
+                signatureFontSize={signatureFontSize}
                 onImageUpload={handleImageUpload}
                 onApplyImageBg={applyImageAsBackground}
                 onPaletteClick={handlePaletteClick}
