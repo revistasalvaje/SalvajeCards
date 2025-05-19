@@ -48,34 +48,32 @@ const TopBar: React.FC<TopBarProps> = ({ onChangeFormat, currentFormat }) => {
   return (
     <div className="top-bar">
       <div className="app-title">
-        Instagram Cards Editor
+        Editor de Cards
       </div>
 
-      <div className="format-toggle-container">
-        <div className="format-toggle">
-          <button 
-            className={currentFormat === 'square' ? 'active' : ''}
-            onClick={() => onChangeFormat('square')}
-          >
-            Cuadrado
-          </button>
-          <button 
-            className={currentFormat === 'portrait' ? 'active' : ''}
-            onClick={() => onChangeFormat('portrait')}
-          >
-            Retrato
-          </button>
-        </div>
+      <div className="format-selector">
+        <button 
+          className={`format-btn ${currentFormat === 'square' ? 'active' : ''}`}
+          onClick={() => onChangeFormat('square')}
+        >
+          Cuadrado
+        </button>
+        <button 
+          className={`format-btn ${currentFormat === 'portrait' ? 'active' : ''}`}
+          onClick={() => onChangeFormat('portrait')}
+        >
+          Retrato
+        </button>
       </div>
 
       <button
         onClick={handleExport}
         disabled={exporting}
-        className="btn btn-primary"
+        className="export-btn"
       >
         {exporting ? (
           <>
-            <svg className="spinner inline-block w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="spinner w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -83,7 +81,7 @@ const TopBar: React.FC<TopBarProps> = ({ onChangeFormat, currentFormat }) => {
           </>
         ) : (
           <>
-            <svg className="inline-block w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
             </svg>
             Exportar JPG

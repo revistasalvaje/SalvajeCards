@@ -227,22 +227,22 @@ function App() {
   return (
     <EditorContext.Provider value={{ canvasInstance }}>
       <NotificationProvider>
-        <div className="flex flex-col h-screen w-screen overflow-hidden bg-gray-100">
+        <div className="app-container">
           <TopBar 
             onChangeFormat={handleFormatChange}
             currentFormat={canvasFormat}
           />
 
-          <div className="flex flex-1 overflow-hidden">
-            <div className="flex-shrink-0 w-1/6 min-w-[180px] border-r border-gray-200">
+          <div className="main-content">
+            <div className="sidebar sidebar-left w-64">
               <LeftSidebar />
             </div>
 
-            <div className="flex-1 flex items-center justify-center bg-gray-200">
+            <div className="canvas-container">
               <CanvasEditor canvasRef={canvasRef} />
             </div>
 
-            <div className="flex-shrink-0 w-1/4 min-w-[280px] max-w-[360px] border-l border-gray-200">
+            <div className="sidebar sidebar-right w-80">
               <RightSidebar
                 uploadedBgImage={uploadedBgImage}
                 palette={palette}

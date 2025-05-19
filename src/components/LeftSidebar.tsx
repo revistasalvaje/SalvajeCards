@@ -270,71 +270,61 @@ const LeftSidebar: React.FC = () => {
   };
 
   return (
-    <div className="sidebar">
-      <h2 className="heading-1">Plantillas</h2>
+    <div className="sidebar sidebar-left">
+      <h2 className="section-title">Plantillas</h2>
 
-      <div className="card">
-        <div className="card-header">Nueva plantilla</div>
-        <div className="card-content">
-          <input
-            type="text"
-            placeholder="Nombre de la plantilla"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="input mb-2"
-          />
+      <div className="subsection">
+        <input
+          type="text"
+          placeholder="Nombre plantilla"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          className="input"
+        />
 
-          <button
-            onClick={handleGuardar}
-            disabled={guardando || !nombre.trim() || !canvasInstance.current}
-            className={`btn ${guardando ? 'btn-secondary' : 'btn-primary'} w-full`}
-          >
-            {guardando ? (
-              <>
-                <svg className="spinner inline-block w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Guardando...
-              </>
-            ) : !canvasInstance.current ? 
-              "Esperando editor..." : 
-              "Guardar plantilla"
-            }
-          </button>
+        <button
+          onClick={handleGuardar}
+          disabled={guardando || !nombre.trim() || !canvasInstance.current}
+          className="btn btn-primary w-full"
+        >
+          {guardando ? (
+            <>
+              <svg className="spinner inline-block w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando...
+            </>
+          ) : "Guardar plantilla"}
+        </button>
+      </div>
+
+      {cargando ? (
+        <div className="flex justify-center items-center h-24">
+          <svg className="spinner w-8 h-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
         </div>
-      </div>
-
-      <div className="mt-4">
-        <h3 className="heading-2">Plantillas guardadas</h3>
-
-        {cargando ? (
-          <div className="flex justify-center items-center h-24">
-            <svg className="spinner w-8 h-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-        ) : plantillas.length === 0 ? (
-          <div className="text-center py-6 text-secondary">
-            <p>No hay plantillas guardadas</p>
-            <p className="text-xs mt-1">Diseña y guarda tu primera plantilla</p>
-          </div>
-        ) : (
-          <div className="templates-grid">
-            {plantillas.map((p) => (
-              <div key={p.id} className="template-item" onClick={() => handleCargar(p.id)}>
-                <img
-                  src={p.thumbnail}
-                  className="template-thumbnail"
-                  alt={p.name}
-                />
-                <div className="template-name">{p.name}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      ) : plantillas.length === 0 ? (
+        <div className="text-center py-6 text-secondary">
+          <p>No hay plantillas guardadas</p>
+          <p className="text-xs mt-1">Diseña y guarda tu primera plantilla</p>
+        </div>
+      ) : (
+        <div className="templates-grid">
+          {plantillas.map((p) => (
+            <div key={p.id} className="template-item" onClick={() => handleCargar(p.id)}>
+              <img
+                src={p.thumbnail}
+                className="template-thumbnail"
+                alt={p.name}
+              />
+              <div className="template-name">{p.name}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
