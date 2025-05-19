@@ -48,12 +48,12 @@ const ColorPickers: React.FC<ColorPickersProps> = ({
   }, [showBgPicker, showTextPicker, toggleBgPicker, toggleTextPicker]);
 
   return (
-    <div className="color-picker-container">
+    <div className="mb-6">
       <h3 className="text-sm font-semibold mb-3">Colores</h3>
       <div className="flex items-start gap-6">
         {/* Fondo */}
         <div className="relative">
-          <label className="text-sm font-medium block mb-1">Fondo</label>
+          <label className="text-xs font-medium block mb-2">Fondo</label>
           <div
             onClick={toggleBgPicker}
             className="color-swatch"
@@ -66,7 +66,7 @@ const ColorPickers: React.FC<ColorPickersProps> = ({
               ref={bgPickerRef}
               className="absolute z-50 mt-2"
             >
-              <div className="shadow-lg">
+              <div className="shadow-md">
                 <ChromePicker
                   color={bgColor}
                   onChange={(c) => onBgColorChange(c.hex)}
@@ -79,7 +79,7 @@ const ColorPickers: React.FC<ColorPickersProps> = ({
 
         {/* Texto */}
         <div className="relative">
-          <label className="text-sm font-medium block mb-1">Texto</label>
+          <label className="text-xs font-medium block mb-2">Texto</label>
           <div
             onClick={toggleTextPicker}
             className="color-swatch"
@@ -92,7 +92,7 @@ const ColorPickers: React.FC<ColorPickersProps> = ({
               ref={textPickerRef}
               className="absolute z-50 mt-2"
             >
-              <div className="shadow-lg">
+              <div className="shadow-md">
                 <ChromePicker
                   color={textColor}
                   onChange={(c) => onTextColorChange(c.hex)}

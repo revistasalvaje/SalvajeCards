@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 interface QuoteControlsProps {
   quote: string;
@@ -52,29 +52,25 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
   };
 
   return (
-    <div className="mb-6 w-full max-w-full">
+    <div className="mb-6 w-full">
       <h3 className="text-sm font-semibold mb-2">Cita</h3>
-      <div className="mb-2">
-        <div className="mb-2">
-          <div className="w-full overflow-hidden">
-            <div className="max-w-full">
-              <textarea
-                value={quote}
-                onChange={(e) => onQuoteChange(e.target.value)}
-                className="block w-full max-w-full p-2 border rounded text-sm mb-2 resize-none"
-                rows={3}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="mb-3">
+        <textarea
+          value={quote}
+          onChange={(e) => onQuoteChange(e.target.value)}
+          className="w-full p-2 text-sm mb-3 resize-none"
+          rows={3}
+          placeholder="Ingresa un texto inspirador..."
+        />
       </div>
 
-      <div className="flex items-center gap-1 flex-nowrap overflow-hidden text-xs">
+      <div className="text-controls">
         {["bold", "italic", "underline", "linethrough"].map((style) => (
           <button
             key={style}
-            className={`w-7 h-7 border rounded shrink-0 ${activeStyles[style as keyof typeof activeStyles] ? 'bg-primary text-white' : ''}`}
+            className={`text-control-btn ${activeStyles[style as keyof typeof activeStyles] ? 'active' : ''}`}
             onClick={() => toggleStyle(style)}
+            title={style.charAt(0).toUpperCase() + style.slice(1)}
           >
             {style[0].toUpperCase()}
           </button>
@@ -85,7 +81,7 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
           min={8}
           max={100}
           value={fontSize}
-          className="w-10 px-1 py-0.5 border rounded text-center shrink-0"
+          className="w-14 px-2 py-1 border text-center text-xs mx-1"
           onChange={(e) => {
             const size = parseInt(e.target.value);
             setFontSize(size);
@@ -94,7 +90,7 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
         />
 
         <select
-          className="px-1 py-0.5 border rounded shrink-0"
+          className="px-2 py-1 border text-xs"
           onChange={(e) => onFontChange(e.target.value)}
         >
           <option value="serif">Serif</option>
@@ -103,7 +99,7 @@ const QuoteControls: React.FC<QuoteControlsProps> = ({
         </select>
 
         <select
-          className="px-1 py-0.5 border rounded shrink-0"
+          className="px-2 py-1 border text-xs ml-1"
           onChange={(e) => onAlignChange(e.target.value)}
         >
           <option value="left">Izquierda</option>

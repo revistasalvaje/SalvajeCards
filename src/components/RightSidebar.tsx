@@ -3,7 +3,7 @@ import ImagePaletteUploader from "./ImagePaletteUploader";
 import QuoteControls from "./QuoteControls";
 import SignatureControls from "./SignatureControls";
 import ShapeControls from "./ShapeControls";
-import ColorPickers from "./ColorPickers";
+import PaletteAccordionContent from "./PaletteAccordionContent";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 
 interface RightSidebarProps {
@@ -76,63 +76,69 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       <h2>Controles</h2>
 
       <Accordion type="multiple" className="w-full" defaultValue={["paleta", "texto", "formas"]}>
-        <AccordionItem value="paleta" className="accordion">
-          <AccordionTrigger className="accordion-header">Paleta</AccordionTrigger>
-          <AccordionContent className="accordion-content">
-            <ImagePaletteUploader
+        <AccordionItem value="paleta" className="accordion mb-3">
+          <AccordionTrigger className="accordion-header">
+            Paleta de colores
+          </AccordionTrigger>
+          <AccordionContent>
+            <PaletteAccordionContent 
               uploadedBgImage={uploadedBgImage}
               palette={palette}
-              onImageUpload={onImageUpload}
-              onApplyImageBg={onApplyImageBg}
-              onPaletteClick={onPaletteClick}
-            />
-
-            {/* Componente de ColorPickers */}
-            <ColorPickers 
               bgColor={bgColor}
               textColor={textColor}
               showBgPicker={showBgPicker}
               showTextPicker={showTextPicker}
-              toggleBgPicker={toggleBgPicker}
-              toggleTextPicker={toggleTextPicker}
+              onImageUpload={onImageUpload}
+              onApplyImageBg={onApplyImageBg}
+              onPaletteClick={onPaletteClick}
               onBgColorChange={onBgColorChange}
               onTextColorChange={onTextColorChange}
+              toggleBgPicker={toggleBgPicker}
+              toggleTextPicker={toggleTextPicker}
             />
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="texto" className="accordion">
-          <AccordionTrigger className="accordion-header">Texto</AccordionTrigger>
-          <AccordionContent className="accordion-content">
-            <QuoteControls
-              quote={quote}
-              onQuoteChange={onQuoteChange}
-              onToggleStyle={onToggleStyle}
-              onFontSizeChange={onFontSizeChange}
-              onFontChange={onFontChange}
-              onAlignChange={onAlignChange}
-            />
-            <SignatureControls
-              signature={signature}
-              onChange={onSignatureChange}
-              onToggleStyle={onToggleSignatureStyle}
-              onFontSizeChange={onFontSizeSignatureChange}
-              onFontChange={onFontSignatureChange}
-              onAlignChange={onAlignSignatureChange}
-            />
+        <AccordionItem value="texto" className="accordion mb-3">
+          <AccordionTrigger className="accordion-header">
+            Contenido de texto
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="p-4">
+              <QuoteControls
+                quote={quote}
+                onQuoteChange={onQuoteChange}
+                onToggleStyle={onToggleStyle}
+                onFontSizeChange={onFontSizeChange}
+                onFontChange={onFontChange}
+                onAlignChange={onAlignChange}
+              />
+              <SignatureControls
+                signature={signature}
+                onChange={onSignatureChange}
+                onToggleStyle={onToggleSignatureStyle}
+                onFontSizeChange={onFontSizeSignatureChange}
+                onFontChange={onFontSignatureChange}
+                onAlignChange={onAlignSignatureChange}
+              />
+            </div>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="formas" className="accordion">
-          <AccordionTrigger className="accordion-header">Formas</AccordionTrigger>
-          <AccordionContent className="accordion-content">
-            <ShapeControls
-              strokeColor={strokeColor}
-              strokeWidth={strokeWidth}
-              addShape={addShape}
-              onStrokeColorChange={handleStrokeColorChange}
-              onStrokeWidthChange={handleStrokeWidthChange}
-            />
+        <AccordionItem value="formas" className="accordion mb-3">
+          <AccordionTrigger className="accordion-header">
+            Elementos gráficos
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="p-4">
+              <ShapeControls
+                strokeColor={strokeColor}
+                strokeWidth={strokeWidth}
+                addShape={addShape}
+                onStrokeColorChange={handleStrokeColorChange}
+                onStrokeWidthChange={handleStrokeWidthChange}
+              />
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>

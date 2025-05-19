@@ -16,18 +16,27 @@ const ImagePaletteUploader: React.FC<ImagePaletteUploaderProps> = ({
   onPaletteClick,
 }) => {
   return (
-    <div className="mb-6">
-      <h3 className="text-sm font-semibold mb-2">Paleta</h3>
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={onImageUpload}
-        className="block w-full text-sm mb-2"
-      />
+    <div className="mb-5">
+      <div className="mb-3">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onImageUpload}
+          className="block w-full text-xs mb-2"
+          id="image-upload"
+        />
+        <label htmlFor="image-upload" className="btn-secondary py-1.5 px-2 text-xs w-full flex justify-center">
+          Examinar...
+        </label>
+        <p className="text-xs text-text-secondary mt-1">
+          {!uploadedBgImage 
+            ? "No se ha seleccionado ningún archivo" 
+            : "Imagen cargada correctamente"}
+        </p>
+      </div>
 
       {uploadedBgImage && (
-        <div className="mb-3">
+        <div className="mb-4">
           <img
             src={uploadedBgImage}
             alt="miniatura"
@@ -36,7 +45,7 @@ const ImagePaletteUploader: React.FC<ImagePaletteUploaderProps> = ({
 
           <button
             onClick={onApplyImageBg}
-            className="w-full bg-gray-800 text-white text-sm px-2 py-1 rounded hover:bg-gray-700"
+            className="btn-primary w-full py-1.5 text-xs"
           >
             Usar como fondo
           </button>
@@ -44,15 +53,19 @@ const ImagePaletteUploader: React.FC<ImagePaletteUploaderProps> = ({
       )}
 
       {palette.length > 0 && (
-        <div className="flex flex-wrap gap-1 min-h-[36px]">
-          {palette.map((color, idx) => (
-            <button
-              key={idx}
-              onClick={() => onPaletteClick(color)}
-              className="w-6 h-9 border"
-              style={{ backgroundColor: color }}
-            />
-          ))}
+        <div>
+          <h4 className="text-xs font-medium mb-2">Colores extraídos</h4>
+          <div className="flex flex-wrap gap-1 min-h-[36px]">
+            {palette.map((color, idx) => (
+              <button
+                key={idx}
+                onClick={() => onPaletteClick(color)}
+                className="w-6 h-9 border hover:scale-110 transition-transform"
+                style={{ backgroundColor: color }}
+                title={`Aplicar color ${idx+1}`}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
