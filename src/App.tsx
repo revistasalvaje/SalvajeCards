@@ -1,7 +1,5 @@
-import React from "react";
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import "./index.css";
-import "./unified-styles.css";
 import ColorThief from "colorthief";
 import { fabric } from "fabric";
 import LeftSidebar from "./components/LeftSidebar";
@@ -230,24 +228,22 @@ function App() {
   return (
     <EditorContext.Provider value={{ canvasInstance }}>
       <NotificationProvider>
-        <div className="app-container">
-          {/* Barra superior */}
+        <div className="flex flex-col h-screen w-screen overflow-hidden bg-gray-100">
           <TopBar 
             onChangeFormat={handleFormatChange}
             currentFormat={canvasFormat}
           />
 
-          {/* Área de trabajo */}
           <div className="flex flex-1 overflow-hidden">
-            <div className="flex-shrink-0 w-1/6 min-w-[180px] border-r">
+            <div className="flex-shrink-0 w-1/6 min-w-[180px] border-r border-gray-200">
               <LeftSidebar />
             </div>
 
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center bg-gray-200">
               <CanvasEditor canvasRef={canvasRef} />
             </div>
 
-            <div className="flex-shrink-0 w-1/4 min-w-[280px] max-w-[360px] border-l">
+            <div className="flex-shrink-0 w-1/4 min-w-[280px] max-w-[360px] border-l border-gray-200">
               <RightSidebar
                 uploadedBgImage={uploadedBgImage}
                 palette={palette}

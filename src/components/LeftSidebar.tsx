@@ -21,7 +21,6 @@ const LeftSidebar: React.FC = () => {
     const cargarPlantillas = async () => {
       try {
         const data = await loadAllPlantillasIndexedDB();
-        console.log("Plantillas obtenidas al cargar:", data);
         setPlantillas(data);
       } catch (error) {
         console.error("Error al cargar plantillas:", error);
@@ -40,7 +39,7 @@ const LeftSidebar: React.FC = () => {
     }
 
     if (!nombre.trim()) {
-      showNotification('Por favor ingresa un nombre para la plantilla', 'warning');
+      showNotification('Ingresa un nombre para la plantilla', 'warning');
       return;
     }
 
@@ -48,7 +47,7 @@ const LeftSidebar: React.FC = () => {
       setGuardando(true);
       await guardarPlantillaIndexedDB(canvasInstance.current, nombre);
       setNombre("");
-      showNotification(`Plantilla "${nombre}" guardada correctamente`, 'success');
+      showNotification(`Plantilla "${nombre}" guardada`, 'success');
 
       // Recarga las plantillas
       const nuevas = await loadAllPlantillasIndexedDB();
@@ -106,7 +105,7 @@ const LeftSidebar: React.FC = () => {
 
       const plantilla = await cargarPlantillaIndexedDB(id);
       if (!plantilla) {
-        showNotification('No se pudo cargar la plantilla', 'error');
+        showNotification('No se encontró la plantilla', 'error');
         return;
       }
 
@@ -263,60 +262,61 @@ const LeftSidebar: React.FC = () => {
       }
 
       canvas.renderAll();
-      showNotification(`Plantilla "${plantilla.name}" cargada correctamente`, 'success');
+      showNotification(`Plantilla "${plantilla.name}" cargada`, 'success');
     } catch (error) {
       console.error("Error al cargar la plantilla:", error);
       showNotification('Error al cargar la plantilla', 'error');
     }
   };
 
-  const isCanvasReady = () => {
-    return canvasInstance.current !== null;
-  };
-
   return (
     <div className="sidebar">
-      <h2>Plantillas</h2>
+      <h2 className="heading-1">Plantillas</h2>
 
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Nombre plantilla"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
-        />
-        <button
-          onClick={handleGuardar}
-          disabled={guardando || !nombre.trim() || !isCanvasReady()}
-          className={`w-full py-2 px-4 bg-blue-600 text-white rounded
-            ${(guardando || !nombre.trim() || !isCanvasReady()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
-        >
-          {guardando ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Guardando...
-            </span>
-          ) : !isCanvasReady() ? "Esperando editor..." : "Guardar plantilla"}
-        </button>
+      <div className="card">
+        <div className="card-header">Nueva plantilla</div>
+        <div className="card-content">
+          <input
+            type="text"
+            placeholder="Nombre de la plantilla"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            className="input mb-2"
+          />
+
+          <button
+            onClick={handleGuardar}
+            disabled={guardando || !nombre.trim() || !canvasInstance.current}
+            className={`btn ${guardando ? 'btn-secondary' : 'btn-primary'} w-full`}
+          >
+            {guardando ? (
+              <>
+                <svg className="spinner inline-block w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando...
+              </>
+            ) : !canvasInstance.current ? 
+              "Esperando editor..." : 
+              "Guardar plantilla"
+            }
+          </button>
+        </div>
       </div>
 
-      <div className="flex-grow overflow-auto">
+      <div className="mt-4">
+        <h3 className="heading-2">Plantillas guardadas</h3>
+
         {cargando ? (
           <div className="flex justify-center items-center h-24">
-            <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="spinner w-8 h-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </div>
         ) : plantillas.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
+          <div className="text-center py-6 text-secondary">
             <p>No hay plantillas guardadas</p>
             <p className="text-xs mt-1">Diseña y guarda tu primera plantilla</p>
           </div>
