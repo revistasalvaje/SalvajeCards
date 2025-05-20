@@ -114,16 +114,16 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
               <span className="text-sm font-medium block mb-1">Fondo</span>
               <div
                 onClick={toggleBgPicker}
-                className="w-full h-8 border rounded cursor-pointer"
-                style={{ backgroundColor: bgColor }}
+                className="w-full h-10 border rounded cursor-pointer"
+                style={{ backgroundColor: bgColor || "#ffffff" }}
               />
             </div>
             <div className="color-control">
               <span className="text-sm font-medium block mb-1">Texto</span>
               <div
                 onClick={toggleTextPicker}
-                className="w-full h-8 border rounded cursor-pointer"
-                style={{ backgroundColor: textColor }}
+                className="w-full h-10 border rounded cursor-pointer"
+                style={{ backgroundColor: textColor || "#000000" }}
               />
             </div>
           </div>
@@ -131,12 +131,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           {palette.length > 0 && (
             <div className="mt-3">
               <p className="text-sm font-medium mb-1">Colores extraídos</p>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-2">
                 {palette.map((color, idx) => (
                   <button
                     key={idx}
                     onClick={() => onPaletteClick(color)}
-                    className="w-6 h-6 border rounded hover:scale-110 transition-transform"
+                    className="w-10 h-10 border rounded hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }}
                     title={`Aplicar color ${idx+1}`}
                   />

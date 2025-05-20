@@ -135,6 +135,25 @@ export function useEditor() {
     }
   };
 
+  // Función auxiliar para aplicar estilo a texto seleccionado
+  const applyTextStyleToSelection = (obj: fabric.Textbox, styleName: string, value: any) => {
+    if (!obj.isEditing) {
+      obj.set({ [styleName]: value });
+      return;
+    }
+
+    const selectionStart = obj.selectionStart || 0;
+    const selectionEnd = obj.selectionEnd || 0;
+
+    if (selectionStart === selectionEnd) {
+      obj.set({ [styleName]: value });
+    } else {
+      for (let i = selectionStart; i < selectionEnd; i++) {
+        obj.setSelectionStyles({ [styleName]: value }, i, i + 1);
+      }
+    }
+  };
+
   // Actualizar estilo de texto
   const updateTextStyle = (type: "quote" | "signature", style: object) => {
     const canvas = canvasInstance.current;
@@ -146,7 +165,9 @@ export function useEditor() {
     ) as fabric.Textbox;
 
     if (textObject) {
-      textObject.set(style);
+      Object.entries(style).forEach(([key, value]) => {
+        applyTextStyleToSelection(textObject, key, value);
+      });
       canvas.renderAll();
     }
   };
@@ -175,6 +196,7 @@ export function useEditor() {
           left: 100,
           top: 100,
           ...commonProps,
+          lockScalingY: true,   // Bloquear redimensionamiento vertical
         });
         break;
 
@@ -205,6 +227,7 @@ export function useEditor() {
           left: 100,
           top: 100,
           ...commonProps,
+          lockScalingY: true,   // Bloquear redimensionamiento vertical
         });
 
         break;

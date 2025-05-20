@@ -59,6 +59,25 @@ function App() {
     setSignatureAlign
   } = useEditor();
 
+  // Escuchar eventos personalizados para actualizar campos de texto
+  useEffect(() => {
+    const handleQuoteUpdate = (e: CustomEvent) => {
+      setQuote(e.detail);
+    };
+
+    const handleSignatureUpdate = (e: CustomEvent) => {
+      setSignature(e.detail);
+    };
+
+    window.addEventListener('quoteUpdate', handleQuoteUpdate as EventListener);
+    window.addEventListener('signatureUpdate', handleSignatureUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('quoteUpdate', handleQuoteUpdate as EventListener);
+      window.removeEventListener('signatureUpdate', handleSignatureUpdate as EventListener);
+    };
+  }, [setQuote, setSignature]);
+
   // Cambiar formato del canvas
   const handleFormatChange = (format: 'square' | 'portrait') => {
     setCanvasFormat(format);
@@ -66,45 +85,73 @@ function App() {
     const canvas = canvasInstance.current;
     if (!canvas) return;
 
+    // Guardar objetos y posiciones actuales
+    const objects = canvas.getObjects();
+    const savedObjects = objects.map(obj => {
+      return {
+        object: obj,
+        left: obj.left,
+        top: obj.top,
+        scaleX: obj.scaleX,
+        scaleY: obj.scaleY,
+        width: (obj as any).width,
+        height: (obj as any).height
+      };
+    });
+
     // Configurar dimensiones según formato
     const scale = 0.5;
+    const oldWidth = canvas.getWidth();
+    const oldHeight = canvas.getHeight();
+
+    let newWidth, newHeight;
+
     if (format === 'square') {
       // Instagram Square: 1080x1080
-      canvas.setWidth(1080 * scale);
-      canvas.setHeight(1080 * scale);
-      canvas.setDimensions({ width: 1080 * scale, height: 1080 * scale });
+      newWidth = 1080 * scale;
+      newHeight = 1080 * scale;
     } else {
       // Instagram Portrait: 1080x1350
-      canvas.setWidth(1080 * scale);
-      canvas.setHeight(1350 * scale);
-      canvas.setDimensions({ width: 1080 * scale, height: 1350 * scale });
+      newWidth = 1080 * scale;
+      newHeight = 1350 * scale;
     }
 
-    // Update text field positions
-    repositionTextFields(canvas);
+    canvas.setWidth(newWidth);
+    canvas.setHeight(newHeight);
+    canvas.setDimensions({ width: newWidth, height: newHeight });
+
+    // Reposicionar objetos proporcionalmente
+    const widthRatio = newWidth / oldWidth;
+    const heightRatio = newHeight / oldHeight;
+
+    savedObjects.forEach(saved => {
+      const obj = saved.object;
+      const isText = obj.type === 'textbox' || obj.type === 'i-text';
+
+      if (isText) {
+        if (obj.name === 'quote') {
+          obj.set({
+            left: newWidth / 2,
+            top: newHeight / 3,
+            width: newWidth * 0.8
+          });
+        } else if (obj.name === 'signature') {
+          obj.set({
+            left: newWidth / 2,
+            top: newHeight * 0.85,
+            width: newWidth * 0.6
+          });
+        }
+      } else {
+        // Para formas, ajustar proporcionalmente
+        obj.set({
+          left: saved.left * widthRatio,
+          top: saved.top * heightRatio
+        });
+      }
+    });
+
     canvas.renderAll();
-  };
-
-  // Reposition text fields after canvas resize
-  const repositionTextFields = (canvas: fabric.Canvas) => {
-    const quoteObj = canvas.getObjects().find(obj => obj.name === 'quote') as fabric.Textbox;
-    const signatureObj = canvas.getObjects().find(obj => obj.name === 'signature') as fabric.Textbox;
-
-    if (quoteObj) {
-      quoteObj.set({
-        left: canvas.getWidth() / 2,
-        top: canvas.getHeight() / 3,
-        width: canvas.getWidth() * 0.8
-      });
-    }
-
-    if (signatureObj) {
-      signatureObj.set({
-        left: canvas.getWidth() / 2,
-        top: canvas.getHeight() * 0.85,
-        width: canvas.getWidth() * 0.6
-      });
-    }
   };
 
   const updateCanvasBackgroundColor = (color: string) => {

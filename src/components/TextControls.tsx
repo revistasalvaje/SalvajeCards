@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface TextControlsProps {
   label: string;
@@ -29,21 +29,25 @@ const TextControls: React.FC<TextControlsProps> = ({
 
   // Toggle style function
   const toggleStyle = (style: string) => {
+    const newStyleState = !activeStyles[style as keyof typeof activeStyles];
+
     let styleKey = style;
-    let styleValue: any = true;
+    let styleValue: any = newStyleState ? true : false;
 
     if (style === "bold") {
       styleKey = "fontWeight";
-      styleValue = "bold";
+      styleValue = newStyleState ? "bold" : "normal";
     } else if (style === "italic") {
       styleKey = "fontStyle";
-      styleValue = "italic";
+      styleValue = newStyleState ? "italic" : "normal";
+    } else if (style === "underline" || style === "linethrough") {
+      styleValue = newStyleState;
     }
 
     // Toggle the style state
     setActiveStyles(prev => ({
       ...prev,
-      [style]: !prev[style as keyof typeof prev]
+      [style]: newStyleState
     }));
 
     // Apply the style to the canvas

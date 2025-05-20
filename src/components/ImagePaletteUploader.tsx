@@ -55,12 +55,12 @@ const ImagePaletteUploader: React.FC<ImagePaletteUploaderProps> = ({
       {palette.length > 0 && (
         <div>
           <h4 className="text-xs font-medium mb-2">Colores extraídos</h4>
-          <div className="flex flex-wrap gap-1 min-h-[36px]">
+          <div className="flex flex-wrap gap-2 min-h-[36px]">
             {palette.map((color, idx) => (
               <button
                 key={idx}
                 onClick={() => onPaletteClick(color)}
-                className="w-6 h-9 border hover:scale-110 transition-transform"
+                className="w-10 h-10 border hover:scale-110 transition-transform rounded"
                 style={{ backgroundColor: color }}
                 title={`Aplicar color ${idx+1}`}
               />

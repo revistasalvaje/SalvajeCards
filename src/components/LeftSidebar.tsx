@@ -110,37 +110,7 @@ const LeftSidebar: React.FC = () => {
       }
 
       const canvas = canvasInstance.current;
-
-      // Find existing text objects before clearing
-      const existingQuote = canvas.getObjects().find(obj => obj.name === 'quote') as fabric.Textbox;
-      const existingSignature = canvas.getObjects().find(obj => obj.name === 'signature') as fabric.Textbox;
-
-      // Save their properties to restore
-      const quoteObj = existingQuote ? {
-        left: existingQuote.left,
-        top: existingQuote.top,
-        width: existingQuote.width,
-        originX: existingQuote.originX,
-        originY: existingQuote.originY
-      } : null;
-
-      const signatureObj = existingSignature ? {
-        left: existingSignature.left,
-        top: existingSignature.top,
-        width: existingSignature.width,
-        originX: existingSignature.originX,
-        originY: existingSignature.originY
-      } : null;
-
-      // Keep references to text objects and remove them temporarily
-      const textObjects = canvas.getObjects().filter(obj => 
-        obj.name === 'quote' || obj.name === 'signature'
-      );
-
-      textObjects.forEach(obj => canvas.remove(obj));
-
-      // Clear other objects from canvas
-      canvas.getObjects().slice().forEach(obj => canvas.remove(obj));
+      canvas.clear();
 
       // Set background
       if (plantilla.bgType === "color") {
@@ -154,11 +124,11 @@ const LeftSidebar: React.FC = () => {
       // Add quote with proper properties
       if (plantilla.quote) {
         const quoteProps = {
-          left: quoteObj?.left || canvas.getWidth() / 2,
-          top: quoteObj?.top || canvas.getHeight() / 3,
-          width: quoteObj?.width || canvas.getWidth() * 0.8,
-          originX: quoteObj?.originX || "center",
-          originY: quoteObj?.originY || "center",
+          left: plantilla.quote.left || canvas.getWidth() / 2,
+          top: plantilla.quote.top || canvas.getHeight() / 3,
+          width: plantilla.quote.width || canvas.getWidth() * 0.8,
+          originX: plantilla.quote.originX || "center",
+          originY: plantilla.quote.originY || "center",
           fontSize: plantilla.quote.fontSize || 48,
           fontFamily: plantilla.quote.fontFamily || "serif",
           textAlign: plantilla.quote.textAlign || "center",
@@ -172,24 +142,36 @@ const LeftSidebar: React.FC = () => {
         const q = new fabric.Textbox(plantilla.quote.text || "", quoteProps);
         canvas.add(q);
 
-        // Trigger UI update event - could be custom event for real app
-        window.dispatchEvent(new CustomEvent('quoteUpdated', { 
-          detail: { text: plantilla.quote.text, styles: {
-            fontSize: plantilla.quote.fontSize,
-            fontFamily: plantilla.quote.fontFamily,
-            textAlign: plantilla.quote.textAlign
-          }}
-        }));
+        // Actualizar los campos de texto en la interfaz
+        if (plantilla.quote.text) {
+          try {
+            // Disparar un evento personalizado para actualizar la UI
+            window.dispatchEvent(new CustomEvent('quoteUpdate', { 
+              detail: plantilla.quote.text 
+            }));
+
+            // Actualizar el valor del textarea directamente
+            const quoteTextarea = document.querySelector('textarea[placeholder*="cita"]') as HTMLTextAreaElement;
+            if (quoteTextarea) {
+              quoteTextarea.value = plantilla.quote.text;
+              // Disparar evento change para actualizar el estado de React
+              const event = new Event('change', { bubbles: true });
+              quoteTextarea.dispatchEvent(event);
+            }
+          } catch(e) {
+            console.error("Error al actualizar interfaz de cita:", e);
+          }
+        }
       }
 
       // Add signature with proper properties
       if (plantilla.signature) {
         const signatureProps = {
-          left: signatureObj?.left || canvas.getWidth() / 2,
-          top: signatureObj?.top || canvas.getHeight() * 0.85,
-          width: signatureObj?.width || canvas.getWidth() * 0.6,
-          originX: signatureObj?.originX || "center",
-          originY: signatureObj?.originY || "center",
+          left: plantilla.signature.left || canvas.getWidth() / 2,
+          top: plantilla.signature.top || canvas.getHeight() * 0.85,
+          width: plantilla.signature.width || canvas.getWidth() * 0.6,
+          originX: plantilla.signature.originX || "center",
+          originY: plantilla.signature.originY || "center",
           fontSize: plantilla.signature.fontSize || 32,
           fontFamily: plantilla.signature.fontFamily || "serif",
           textAlign: plantilla.signature.textAlign || "center",
@@ -203,14 +185,26 @@ const LeftSidebar: React.FC = () => {
         const s = new fabric.Textbox(plantilla.signature.text || "", signatureProps);
         canvas.add(s);
 
-        // Trigger UI update event
-        window.dispatchEvent(new CustomEvent('signatureUpdated', { 
-          detail: { text: plantilla.signature.text, styles: {
-            fontSize: plantilla.signature.fontSize,
-            fontFamily: plantilla.signature.fontFamily,
-            textAlign: plantilla.signature.textAlign
-          }}
-        }));
+        // Actualizar los campos de texto en la interfaz
+        if (plantilla.signature.text) {
+          try {
+            // Disparar un evento personalizado para actualizar la UI
+            window.dispatchEvent(new CustomEvent('signatureUpdate', { 
+              detail: plantilla.signature.text 
+            }));
+
+            // Actualizar el valor del textarea directamente
+            const signatureTextarea = document.querySelector('textarea[placeholder*="Autor"]') as HTMLTextAreaElement;
+            if (signatureTextarea) {
+              signatureTextarea.value = plantilla.signature.text;
+              // Disparar evento change para actualizar el estado de React
+              const event = new Event('change', { bubbles: true });
+              signatureTextarea.dispatchEvent(event);
+            }
+          } catch(e) {
+            console.error("Error al actualizar interfaz de firma:", e);
+          }
+        }
       }
 
       // Add shapes with proper handling for each type
@@ -251,6 +245,7 @@ const LeftSidebar: React.FC = () => {
               {
                 stroke: shape.stroke,
                 strokeWidth: shape.strokeWidth,
+                lockScalingY: true, // Evitar distorsión vertical
               }
             );
           }
