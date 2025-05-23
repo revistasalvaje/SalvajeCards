@@ -20,8 +20,8 @@ export function useEditor() {
   const [signatureFontSize, setSignatureFontSize] = useState(32);
   const [quoteFont, setQuoteFont] = useState("serif");
   const [signatureFont, setSignatureFont] = useState("serif");
-  const [quoteAlign, setQuoteAlign] = useState("center");
-  const [signatureAlign, setSignatureAlign] = useState("center");
+  const [quoteAlign, setQuoteAlign] = useState("left");
+  const [signatureAlign, setSignatureAlign] = useState("left");
 
   const [strokeColor, setStrokeColor] = useState("#000000");
   const [strokeWidth, setStrokeWidth] = useState(2);
@@ -72,45 +72,42 @@ export function useEditor() {
   }, []);
 
   const initializeTextFields = (canvas: fabric.Canvas) => {
-    // Crear campo para la cita
+    const margin = 50;
+    const availableWidth = canvas.getWidth() - (margin * 2);
+
+    // Crear campo para la cita - posición fija arriba izquierda
     const quoteText = new fabric.Textbox("", {
-      left: canvas.getWidth() / 2,
-      top: canvas.getHeight() / 3,
-      originX: "center",
-      originY: "center",
+      left: margin,
+      top: margin,
       fontSize: quoteFontSize,
       fontFamily: quoteFont,
       fill: textColor,
-      textAlign: quoteAlign,
-      width: canvas.getWidth() * 0.8,
+      textAlign: "left",
+      width: availableWidth,
       name: "quote",
       editable: true,
       lockUniScaling: true,
       centeredRotation: true,
-      // Propiedades clave para ancho fijo
-      fixedWidth: canvas.getWidth() * 0.8,
-      dynamicMinWidth: 0,
-    } as any);
+      lockScalingX: true,
+      lockScalingY: true,
+    });
 
-    // Crear campo para la firma
+    // Crear campo para la firma - posición fija abajo izquierda
     const signatureText = new fabric.Textbox("", {
-      left: canvas.getWidth() / 2,
+      left: margin,
       top: canvas.getHeight() * 0.85,
-      originX: "center",
-      originY: "center",
       fontSize: signatureFontSize,
       fontFamily: signatureFont,
       fill: textColor,
-      textAlign: signatureAlign,
-      width: canvas.getWidth() * 0.6,
+      textAlign: "left",
+      width: availableWidth,
       name: "signature",
       editable: true,
       lockUniScaling: true,
       centeredRotation: true,
-      // Propiedades clave para ancho fijo
-      fixedWidth: canvas.getWidth() * 0.6,
-      dynamicMinWidth: 0,
-    } as any);
+      lockScalingX: true,
+      lockScalingY: true,
+    });
 
     canvas.add(quoteText);
     canvas.add(signatureText);
