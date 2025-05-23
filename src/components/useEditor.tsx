@@ -35,11 +35,10 @@ export function useEditor() {
 
     console.log("Inicializando canvas...");
 
-    // Es fundamental asegurarse que el elemento canvas existe en el DOM
     const canvas = new fabric.Canvas(canvasEl, {
       backgroundColor: "white",
       width: 1080,
-      height: 1350, // Inicialmente formato retrato
+      height: 1350,
       selection: true,
     });
 
@@ -51,15 +50,12 @@ export function useEditor() {
     canvasInstance.current = canvas;
     console.log("Canvas inicializado correctamente:", canvasInstance.current);
 
-    // Inicializar campos de texto
     initializeTextFields(canvas);
 
-    // Borrar objeto seleccionado con Supr
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" || e.key === "Backspace") {
         const active = canvas.getActiveObject();
         if (active && active.type !== "textbox") {
-          // Solo permitir borrar elementos que no sean los campos de texto principales
           canvas.remove(active);
           canvas.requestRenderAll();
         }
@@ -75,7 +71,6 @@ export function useEditor() {
     };
   }, []);
 
-  // Inicializar los campos de texto en el canvas
   const initializeTextFields = (canvas: fabric.Canvas) => {
     // Crear campo para la cita
     const quoteText = new fabric.Textbox("", {
@@ -92,7 +87,10 @@ export function useEditor() {
       editable: true,
       lockUniScaling: true,
       centeredRotation: true,
-    });
+      // Propiedades clave para ancho fijo
+      fixedWidth: canvas.getWidth() * 0.8,
+      dynamicMinWidth: 0,
+    } as any);
 
     // Crear campo para la firma
     const signatureText = new fabric.Textbox("", {
@@ -109,19 +107,20 @@ export function useEditor() {
       editable: true,
       lockUniScaling: true,
       centeredRotation: true,
-    });
+      // Propiedades clave para ancho fijo
+      fixedWidth: canvas.getWidth() * 0.6,
+      dynamicMinWidth: 0,
+    } as any);
 
     canvas.add(quoteText);
     canvas.add(signatureText);
     canvas.renderAll();
   };
 
-  // Actualizar texto en el canvas
   const updateTextField = (type: "quote" | "signature", text: string) => {
     const canvas = canvasInstance.current;
     if (!canvas) return;
 
-    // Encontrar el campo de texto correspondiente
     const textObject = canvas.getObjects().find(
       (obj) => obj.name === type
     ) as fabric.Textbox;
@@ -130,12 +129,10 @@ export function useEditor() {
       textObject.set({ text });
       canvas.renderAll();
     } else {
-      // Si no existe el campo, recrearlo
       initializeTextFields(canvas);
     }
   };
 
-  // Función auxiliar para aplicar estilo a texto seleccionado
   const applyTextStyleToSelection = (obj: fabric.Textbox, styleName: string, value: any) => {
     if (!obj.isEditing) {
       obj.set({ [styleName]: value });
@@ -154,12 +151,10 @@ export function useEditor() {
     }
   };
 
-  // Actualizar estilo de texto
   const updateTextStyle = (type: "quote" | "signature", style: object) => {
     const canvas = canvasInstance.current;
     if (!canvas) return;
 
-    // Encontrar el campo de texto correspondiente
     const textObject = canvas.getObjects().find(
       (obj) => obj.name === type
     ) as fabric.Textbox;
@@ -172,7 +167,6 @@ export function useEditor() {
     }
   };
 
-  // Añadir forma al canvas
   const addShape = (type: "line" | "arrow" | "rect" | "circle") => {
     const canvas = canvasInstance.current;
     if (!canvas) {
@@ -196,7 +190,7 @@ export function useEditor() {
           left: 100,
           top: 100,
           ...commonProps,
-          lockScalingY: true,   // Bloquear redimensionamiento vertical
+          lockScalingY: true,
         });
         break;
 
@@ -227,7 +221,7 @@ export function useEditor() {
           left: 100,
           top: 100,
           ...commonProps,
-          lockScalingY: true,   // Bloquear redimensionamiento vertical
+          lockScalingY: true,
         });
 
         break;
@@ -261,7 +255,6 @@ export function useEditor() {
     canvas.requestRenderAll();
   };
 
-  // Cambiar color de trazo
   const handleStrokeColorChange = (color: string) => {
     setStrokeColor(color);
     const active = canvasInstance.current?.getActiveObject();
@@ -278,7 +271,6 @@ export function useEditor() {
     }
   };
 
-  // Cambiar grosor de trazo
   const handleStrokeWidthChange = (width: number) => {
     setStrokeWidth(width);
     const active = canvasInstance.current?.getActiveObject();
@@ -289,7 +281,7 @@ export function useEditor() {
       group.forEachObject((obj) => {
         obj.set("strokeWidth", width);
         if (obj.type === "line") {
-          obj.top = -width / 2; // reajuste vertical de la línea
+          obj.top = -width / 2;
         }
       });
       group.dirty = true;
@@ -300,7 +292,6 @@ export function useEditor() {
     canvasInstance.current?.requestRenderAll();
   };
 
-  // Verificar si el canvas está inicializado
   const isCanvasReady = () => {
     return canvasInstance.current !== null;
   };
@@ -334,7 +325,6 @@ export function useEditor() {
     handleStrokeWidthChange,
     updateTextField,
     updateTextStyle,
-    // Expose font properties
     quoteFontSize,
     setQuoteFontSize,
     signatureFontSize,

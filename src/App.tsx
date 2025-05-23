@@ -168,8 +168,10 @@ function App() {
     setTextColor(color);
     const canvas = canvasInstance.current;
     if (!canvas) return;
+
+    // Solo actualizar objetos de texto, no formas
     canvas.getObjects().forEach((obj) => {
-      if (obj.type === "textbox") {
+      if (obj.type === "textbox" || obj.type === "i-text") {
         (obj as fabric.Textbox).set({ fill: color });
       }
     });

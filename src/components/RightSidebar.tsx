@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { ChromePicker } from "react-color";
 
 interface RightSidebarProps {
   uploadedBgImage: string | null;
@@ -69,6 +70,74 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   handleStrokeColorChange,
   handleStrokeWidthChange,
 }) => {
+  const bgPickerRef = useRef<HTMLDivElement>(null);
+  const textPickerRef = useRef<HTMLDivElement>(null);
+
+  // Estados para controlar botones de estilo
+  const [quoteStyles, setQuoteStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false
+  });
+
+  const [signatureStyles, setSignatureStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false
+  });
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (showBgPicker && bgPickerRef.current && !bgPickerRef.current.contains(event.target as Node)) {
+        toggleBgPicker();
+      }
+      if (showTextPicker && textPickerRef.current && !textPickerRef.current.contains(event.target as Node)) {
+        toggleTextPicker();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showBgPicker, showTextPicker, toggleBgPicker, toggleTextPicker]);
+
+  // Manejar toggle de estilos para cita
+  const handleQuoteStyleToggle = (style: 'bold' | 'italic' | 'underline') => {
+    const newState = !quoteStyles[style];
+    setQuoteStyles(prev => ({ ...prev, [style]: newState }));
+
+    let styleKey = style;
+    let styleValue: any = newState;
+
+    if (style === 'bold') {
+      styleKey = 'fontWeight';
+      styleValue = newState ? 'bold' : 'normal';
+    } else if (style === 'italic') {
+      styleKey = 'fontStyle';
+      styleValue = newState ? 'italic' : 'normal';
+    }
+
+    onToggleStyle(styleKey, styleValue);
+  };
+
+  // Manejar toggle de estilos para firma
+  const handleSignatureStyleToggle = (style: 'bold' | 'italic' | 'underline') => {
+    const newState = !signatureStyles[style];
+    setSignatureStyles(prev => ({ ...prev, [style]: newState }));
+
+    let styleKey = style;
+    let styleValue: any = newState;
+
+    if (style === 'bold') {
+      styleKey = 'fontWeight';
+      styleValue = newState ? 'bold' : 'normal';
+    } else if (style === 'italic') {
+      styleKey = 'fontStyle';
+      styleValue = newState ? 'italic' : 'normal';
+    }
+
+    onToggleSignatureStyle(styleKey, styleValue);
+  };
+
   return (
     <div className="sidebar sidebar-right">
       {/* FONDO SECTION */}
@@ -80,8 +149,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             <svg className="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
             </svg>
-            <span className="text-sm text-gray-500">Subir imagen</span>
-            <label className="btn btn-secondary upload-btn mt-2">
+            <span className="text-sm text-gray-500 mb-2">Subir imagen</span>
+            <label className="btn btn-secondary">
               <input
                 type="file"
                 accept="image/*"
@@ -96,9 +165,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             <img
               src={uploadedBgImage}
               alt="miniatura"
-              className="w-full h-auto max-h-32 object-cover rounded mb-2 border"
+              className="w-full h-auto max-h-32 object-cover rounded-lg mb-3 border"
             />
-
             <button
               onClick={onApplyImageBg}
               className="btn btn-primary w-full"
@@ -111,32 +179,51 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         <div className="subsection">
           <div className="color-controls">
             <div className="color-control">
-              <span className="text-sm font-medium block mb-1">Fondo</span>
+              <label>Fondo</label>
               <div
                 onClick={toggleBgPicker}
-                className="w-full h-10 border rounded cursor-pointer"
+                className="color-swatch"
                 style={{ backgroundColor: bgColor || "#ffffff" }}
               />
+              {showBgPicker && (
+                <div ref={bgPickerRef} className="color-picker-dropdown">
+                  <ChromePicker
+                    color={bgColor}
+                    onChange={(color) => onBgColorChange(color.hex)}
+                    disableAlpha
+                  />
+                </div>
+              )}
             </div>
+
             <div className="color-control">
-              <span className="text-sm font-medium block mb-1">Texto</span>
+              <label>Texto</label>
               <div
                 onClick={toggleTextPicker}
-                className="w-full h-10 border rounded cursor-pointer"
+                className="color-swatch"
                 style={{ backgroundColor: textColor || "#000000" }}
               />
+              {showTextPicker && (
+                <div ref={textPickerRef} className="color-picker-dropdown">
+                  <ChromePicker
+                    color={textColor}
+                    onChange={(color) => onTextColorChange(color.hex)}
+                    disableAlpha
+                  />
+                </div>
+              )}
             </div>
           </div>
 
           {palette.length > 0 && (
-            <div className="mt-3">
-              <p className="text-sm font-medium mb-1">Colores extraídos</p>
+            <div>
+              <p className="subsection-title">Colores extraídos</p>
               <div className="flex flex-wrap gap-2">
                 {palette.map((color, idx) => (
                   <button
                     key={idx}
                     onClick={() => onPaletteClick(color)}
-                    className="w-10 h-10 border rounded hover:scale-110 transition-transform"
+                    className="w-10 h-10 border-2 border-gray-200 rounded-lg hover:scale-110 transition-transform hover:border-blue-400"
                     style={{ backgroundColor: color }}
                     title={`Aplicar color ${idx+1}`}
                   />
@@ -155,26 +242,30 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           onChange={(e) => onQuoteChange(e.target.value)}
           className="input"
           placeholder="Escribe tu cita aquí..."
+          rows={3}
         />
 
         <div className="text-controls">
           <button 
-            className="control-btn" 
-            onClick={() => onToggleStyle("fontWeight", "bold")}
+            className={`control-btn ${quoteStyles.bold ? 'active' : ''}`}
+            onClick={() => handleQuoteStyleToggle('bold')}
+            title="Negrita"
           >
-            B
+            <strong>B</strong>
           </button>
           <button 
-            className="control-btn" 
-            onClick={() => onToggleStyle("fontStyle", "italic")}
+            className={`control-btn ${quoteStyles.italic ? 'active' : ''}`}
+            onClick={() => handleQuoteStyleToggle('italic')}
+            title="Cursiva"
           >
-            I
+            <em>I</em>
           </button>
           <button 
-            className="control-btn" 
-            onClick={() => onToggleStyle("underline", true)}
+            className={`control-btn ${quoteStyles.underline ? 'active' : ''}`}
+            onClick={() => handleQuoteStyleToggle('underline')}
+            title="Subrayado"
           >
-            U
+            <u>U</u>
           </button>
 
           <input
@@ -182,13 +273,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             min={8}
             max={100}
             value={quoteFontSize}
-            className="w-12 h-[1.75rem] px-1 border rounded text-center text-xs"
             onChange={(e) => onFontSizeChange(parseInt(e.target.value))}
+            title="Tamaño"
           />
 
           <select
-            className="h-[1.75rem] px-1 border rounded text-xs"
             onChange={(e) => onFontChange(e.target.value)}
+            title="Fuente"
+            defaultValue="serif"
           >
             <option value="serif">Serif</option>
             <option value="sans-serif">Sans</option>
@@ -196,12 +288,13 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </select>
 
           <select
-            className="h-[1.75rem] px-1 border rounded text-xs"
             onChange={(e) => onAlignChange(e.target.value)}
+            title="Alineación"
+            defaultValue="center"
           >
-            <option value="left">Izq</option>
+            <option value="left">Izquierda</option>
             <option value="center">Centro</option>
-            <option value="right">Der</option>
+            <option value="right">Derecha</option>
           </select>
         </div>
       </div>
@@ -214,26 +307,30 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           onChange={(e) => onSignatureChange(e.target.value)}
           className="input"
           placeholder="Autor de la cita..."
+          rows={2}
         />
 
         <div className="text-controls">
           <button 
-            className="control-btn" 
-            onClick={() => onToggleSignatureStyle("fontWeight", "bold")}
+            className={`control-btn ${signatureStyles.bold ? 'active' : ''}`}
+            onClick={() => handleSignatureStyleToggle('bold')}
+            title="Negrita"
           >
-            B
+            <strong>B</strong>
           </button>
           <button 
-            className="control-btn" 
-            onClick={() => onToggleSignatureStyle("fontStyle", "italic")}
+            className={`control-btn ${signatureStyles.italic ? 'active' : ''}`}
+            onClick={() => handleSignatureStyleToggle('italic')}
+            title="Cursiva"
           >
-            I
+            <em>I</em>
           </button>
           <button 
-            className="control-btn" 
-            onClick={() => onToggleSignatureStyle("underline", true)}
+            className={`control-btn ${signatureStyles.underline ? 'active' : ''}`}
+            onClick={() => handleSignatureStyleToggle('underline')}
+            title="Subrayado"
           >
-            U
+            <u>U</u>
           </button>
 
           <input
@@ -241,13 +338,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             min={8}
             max={100}
             value={signatureFontSize}
-            className="w-12 h-[1.75rem] px-1 border rounded text-center text-xs"
             onChange={(e) => onFontSizeSignatureChange(parseInt(e.target.value))}
+            title="Tamaño"
           />
 
           <select
-            className="h-[1.75rem] px-1 border rounded text-xs"
             onChange={(e) => onFontSignatureChange(e.target.value)}
+            title="Fuente"
+            defaultValue="serif"
           >
             <option value="serif">Serif</option>
             <option value="sans-serif">Sans</option>
@@ -255,12 +353,13 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </select>
 
           <select
-            className="h-[1.75rem] px-1 border rounded text-xs"
             onChange={(e) => onAlignSignatureChange(e.target.value)}
+            title="Alineación"
+            defaultValue="center"
           >
-            <option value="left">Izq</option>
+            <option value="left">Izquierda</option>
             <option value="center">Centro</option>
-            <option value="right">Der</option>
+            <option value="right">Derecha</option>
           </select>
         </div>
       </div>
@@ -296,24 +395,27 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-4 mt-3">
-          <div className="color-swatch" style={{ backgroundColor: strokeColor }}>
-            <input
-              type="color"
-              value={strokeColor}
-              onChange={(e) => handleStrokeColorChange(e.target.value)}
-              className="w-full h-full opacity-0 cursor-pointer"
-            />
+        <div className="shape-properties">
+          <div className="shape-property">
+            <label>Color</label>
+            <div className="color-swatch" style={{ backgroundColor: strokeColor }}>
+              <input
+                type="color"
+                value={strokeColor}
+                onChange={(e) => handleStrokeColorChange(e.target.value)}
+                className="w-full h-full opacity-0 cursor-pointer absolute inset-0"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center">
+          <div className="shape-property">
+            <label>Grosor</label>
             <input
               type="number"
               min={1}
               max={20}
               value={strokeWidth}
               onChange={(e) => handleStrokeWidthChange(parseInt(e.target.value))}
-              className="w-12 border rounded text-center"
             />
           </div>
         </div>

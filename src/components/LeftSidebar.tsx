@@ -96,6 +96,33 @@ const LeftSidebar: React.FC = () => {
     return arrow;
   };
 
+  // Función para actualizar los textareas del sidebar derecho
+  const updateTextareas = (quote: string, signature: string) => {
+    // Actualizar textarea de cita
+    const quoteTextarea = document.querySelector('textarea[placeholder*="cita"]') as HTMLTextAreaElement;
+    if (quoteTextarea) {
+      quoteTextarea.value = quote;
+      // Disparar evento para que React actualice el estado
+      const event = new Event('input', { bubbles: true });
+      quoteTextarea.dispatchEvent(event);
+    }
+
+    // Actualizar textarea de firma
+    const signatureTextarea = document.querySelector('textarea[placeholder*="Autor"]') as HTMLTextAreaElement;
+    if (signatureTextarea) {
+      signatureTextarea.value = signature;
+      // Disparar evento para que React actualice el estado
+      const event = new Event('input', { bubbles: true });
+      signatureTextarea.dispatchEvent(event);
+    }
+
+    // También disparar eventos personalizados como backup
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('quoteUpdate', { detail: quote }));
+      window.dispatchEvent(new CustomEvent('signatureUpdate', { detail: signature }));
+    }, 100);
+  };
+
   const handleCargar = async (id: string) => {
     try {
       if (!canvasInstance.current) {
@@ -121,8 +148,13 @@ const LeftSidebar: React.FC = () => {
         });
       }
 
+      let quoteText = "";
+      let signatureText = "";
+
       // Add quote with proper properties
       if (plantilla.quote) {
+        quoteText = plantilla.quote.text || "";
+
         const quoteProps = {
           left: plantilla.quote.left || canvas.getWidth() / 2,
           top: plantilla.quote.top || canvas.getHeight() / 3,
@@ -134,38 +166,19 @@ const LeftSidebar: React.FC = () => {
           textAlign: plantilla.quote.textAlign || "center",
           fill: plantilla.quote.fill || "#000000",
           name: "quote",
-          text: plantilla.quote.text || "",
+          text: quoteText,
           selectable: true,
           editable: true,
         };
 
-        const q = new fabric.Textbox(plantilla.quote.text || "", quoteProps);
+        const q = new fabric.Textbox(quoteText, quoteProps);
         canvas.add(q);
-
-        // Actualizar los campos de texto en la interfaz
-        if (plantilla.quote.text) {
-          try {
-            // Disparar un evento personalizado para actualizar la UI
-            window.dispatchEvent(new CustomEvent('quoteUpdate', { 
-              detail: plantilla.quote.text 
-            }));
-
-            // Actualizar el valor del textarea directamente
-            const quoteTextarea = document.querySelector('textarea[placeholder*="cita"]') as HTMLTextAreaElement;
-            if (quoteTextarea) {
-              quoteTextarea.value = plantilla.quote.text;
-              // Disparar evento change para actualizar el estado de React
-              const event = new Event('change', { bubbles: true });
-              quoteTextarea.dispatchEvent(event);
-            }
-          } catch(e) {
-            console.error("Error al actualizar interfaz de cita:", e);
-          }
-        }
       }
 
       // Add signature with proper properties
       if (plantilla.signature) {
+        signatureText = plantilla.signature.text || "";
+
         const signatureProps = {
           left: plantilla.signature.left || canvas.getWidth() / 2,
           top: plantilla.signature.top || canvas.getHeight() * 0.85,
@@ -177,34 +190,13 @@ const LeftSidebar: React.FC = () => {
           textAlign: plantilla.signature.textAlign || "center",
           fill: plantilla.signature.fill || "#000000",
           name: "signature",
-          text: plantilla.signature.text || "",
+          text: signatureText,
           selectable: true,
           editable: true,
         };
 
-        const s = new fabric.Textbox(plantilla.signature.text || "", signatureProps);
+        const s = new fabric.Textbox(signatureText, signatureProps);
         canvas.add(s);
-
-        // Actualizar los campos de texto en la interfaz
-        if (plantilla.signature.text) {
-          try {
-            // Disparar un evento personalizado para actualizar la UI
-            window.dispatchEvent(new CustomEvent('signatureUpdate', { 
-              detail: plantilla.signature.text 
-            }));
-
-            // Actualizar el valor del textarea directamente
-            const signatureTextarea = document.querySelector('textarea[placeholder*="Autor"]') as HTMLTextAreaElement;
-            if (signatureTextarea) {
-              signatureTextarea.value = plantilla.signature.text;
-              // Disparar evento change para actualizar el estado de React
-              const event = new Event('change', { bubbles: true });
-              signatureTextarea.dispatchEvent(event);
-            }
-          } catch(e) {
-            console.error("Error al actualizar interfaz de firma:", e);
-          }
-        }
       }
 
       // Add shapes with proper handling for each type
@@ -257,6 +249,12 @@ const LeftSidebar: React.FC = () => {
       }
 
       canvas.renderAll();
+
+      // Actualizar los textareas después de que se renderice el canvas
+      setTimeout(() => {
+        updateTextareas(quoteText, signatureText);
+      }, 200);
+
       showNotification(`Plantilla "${plantilla.name}" cargada`, 'success');
     } catch (error) {
       console.error("Error al cargar la plantilla:", error);
